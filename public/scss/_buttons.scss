@@ -1,0 +1,25 @@
+.btn-button{
+    color: $color1;
+    border-color: $color1;
+    &:focus{
+        box-shadow: none;
+    }
+    &:hover{
+        transition: .3s ease;
+        background-color: $color1;
+        color: #fff !important;
+    }
+}
+
+.btn-button-bg{
+    background: $color1;
+    border-color: $color1;
+    &:focus{
+        box-shadow: none;
+    }
+    &:hover{
+        transition: .3s ease;
+        background-color: transparent !important;
+        color: #222 !important;
+    }
+}

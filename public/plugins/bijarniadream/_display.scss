@@ -1,0 +1,53 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+// scss-docs-start displays-map
+$displays: (
+  "block"                       : true,
+  "contents"                    : true,
+  "flex"                        : true,
+  "flow-root"                   : true,
+  "grid"                        : true,
+  "inherit"                     : true,
+  "initial"                     : true,
+  "inline"                      : true,
+  "inline-block"                : true,
+  "inline-flex"                 : true,
+  "inline-grid"                 : true,
+  "inline-table"                : true,
+  "list-item"                   : true,
+  "none"                        : true,
+  "revert"                      : true,
+  "table"                       : true,
+  "table-caption"               : true,
+  "table-cell"                  : true,
+  "table-column"                : true,
+  "table-column-group"          : true,
+  "table-footer-group"          : true,
+  "table-header-group"          : true,
+  "table-row"                   : true,
+  "table-row-group"             : true,
+  "unset"                       : true,
+) !default;
+// scss-docs-end displays-map
+
+
+@if $display == true {
+  /* Display in viewport format                :   from 0vw  to  100vw */
+}
+
+@mixin display($bp: "") {
+    @if $display == true {
+      @each $value, $cond in $displays {
+        @if $cond == true {
+          .d-#{$bp}#{$value} {
+            display: #{$value} !important;
+          }
+        }
+      }
+    }
+}

@@ -1,0 +1,48 @@
+@import "variables";
+@import "fontsize";
+@import "width";
+@import "maxWidth";
+@import "height";
+@import "zIndex";
+@import "top";
+@import "bottom";
+@import "left";
+@import "right";
+@import "display";
+@import "backgroundImage";
+@import "rounded";
+
+@mixin prefix() {
+  @include font-size();
+  @include width();
+  @include maxWidth();
+  @include height();
+  @include zIndex();
+  @include top();
+  @include bottom();
+  @include left();
+  @include right();
+  @include display();
+  @include backgroundImage();
+  @include rounded();
+  @each $label, $bareckpoint in $brecks {
+    @media (min-width: #{$bareckpoint}px) {
+      @if $breckpoints == true {
+        @include font-size(#{$label}-);
+        @include width(#{$label}-);
+        @include maxWidth(#{$label}-);
+        @include height(#{$label}-);
+        @include zIndex(#{$label}-);
+        @include top(#{$label}-);
+        @include bottom(#{$label}-);
+        @include left(#{$label}-);
+        @include right(#{$label}-);
+        @include display(#{$label}-);
+        @include backgroundImage(#{$label}-);
+        @include rounded(#{$label}-);
+      }
+    }
+  }
+}
+
+@include prefix();

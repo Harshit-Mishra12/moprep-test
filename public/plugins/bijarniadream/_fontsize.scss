@@ -1,0 +1,29 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+@if $fontSize-in-viewport == true {
+  /* Font Size in viewport format              :   from 0vw  to  100vw */
+}
+
+@mixin font-size($bp: "") {
+  @if $fontSize-in-viewport == true {
+    $f: 1;
+    @for $i from 0 through 75 {
+      @if $i > 50 {
+        $f: $f + 2;
+        .fs-#{$bp}#{$f} {
+          font-size: #{$f / 16}rem !important;
+        }
+      } @else {
+        $f: $i;
+        .fs-#{$bp}#{$i} {
+          font-size: #{$i / 16}rem !important;
+        }
+      }
+    }
+  }
+}

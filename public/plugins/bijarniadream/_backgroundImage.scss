@@ -1,0 +1,86 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+// scss-docs-start bgPositions-map
+$bgPositions: (
+  "top":    "top",
+  "bottom": "bottom",
+  "start":   "left",
+  "end":  "right",
+  "center": "center",
+) !default;
+// scss-docs-end bgPositions-map
+
+// scss-docs-start bgSize-map
+$bgSize: (
+  "cover":  true,
+  "auto":   true,
+) !default;
+// scss-docs-end bgSize-map
+
+// scss-docs-start bgRepeat-map
+$bgRepeat: (
+  "repeat":   true,
+  "repeat-x": true,
+  "repeat-y": true,
+) !default;
+// scss-docs-end bgRepeat-map
+
+// scss-docs-start bgAttachment-map
+$bgAttachment: (
+  "fixed":  true,
+  "scroll": true,
+) !default;
+// scss-docs-end bgAttachment-map
+
+@if $backgroundImage == true {
+  /* Background image */
+
+  
+  .bg-fluid {
+    background: var(--bg);
+    background-position: var(--bgPosition);
+    background-size: var(--bgSize);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
+
+
+
+@mixin backgroundImage($bp: "") {
+  @if $backgroundImage == true {
+
+ 
+    @each $cond, $value in $bgPositions {
+        .bg-#{$bp}#{$cond} {
+          background-position: #{$value} !important;
+        }
+    }
+
+    @each $value, $cond in $bgSize {
+        .bg-#{$bp}#{$value} {
+          background-size: #{$value} !important;
+        }
+    }
+
+    @each $value, $cond in $bgRepeat {
+        .bg-#{$bp}#{$value} {
+          background-repeat: #{$value} !important;
+        }
+    }
+
+    @each $value, $cond in $bgAttachment {
+        .bg-#{$bp}#{$value} {
+          background-attachment: #{$value} !important;
+        }
+    }
+
+
+  }
+}

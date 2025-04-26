@@ -1,0 +1,471 @@
+body {
+  font-family: "Noto Sans Glagolitic", sans-serif;
+  font-family: "Rubik", sans-serif;
+}
+
+body.scrollbar-track {
+  background: #FBF6EB;
+}
+
+body.scrollbar-thumb {
+  background: #2490eb;
+}
+
+body::-webkit-scrollbar-track {
+  background-color: #FBF6EB;
+}
+
+body::-webkit-scrollbar {
+  width: 6px;
+  background-color: #FBF6EB;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #2490eb;
+}
+
+.lh-normal {
+  line-height: normal;
+}
+
+.fw-100 {
+  font-weight: 100;
+}
+
+.fw-200 {
+  font-weight: 200;
+}
+
+.fw-300 {
+  font-weight: 300;
+}
+
+.fw-400 {
+  font-weight: 400;
+}
+
+.fw-500 {
+  font-weight: 500;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+.fw-700 {
+  font-weight: 700;
+}
+
+.fw-800 {
+  font-weight: 800;
+}
+
+.fw-900 {
+  font-weight: 900;
+}
+
+.header-section {
+  border-bottom: 1px solid #EBDDBF;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 99999;
+  background: #fff;
+}
+.header-section .navbar-brand img {
+  width: 152px;
+}
+
+.inner-menus {
+  display: block !important;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  z-index: 9;
+  text-align: left;
+  white-space: nowrap;
+  text-align: left;
+  border-radius: 0 0 3px 3px;
+  border: none;
+  visibility: hidden;
+  opacity: 0;
+  box-shadow: 0 3px 12px rgba(27, 31, 35, 0.15);
+  transition: opacity 0.35s;
+  transform: translate3d(0, -15px, 0);
+  padding: 0px 0px !important;
+  box-shadow: 0 2px 20px 0 rgba(62, 65, 159, 0.09);
+  z-index: 99999;
+}
+
+.navbar-links li:hover .inner-menus {
+  display: block;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.color2 {
+  color: #72569d;
+}
+
+.silder-section {
+  background-color: #f4f6f9;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.silder-section .silder-head {
+  font-family: "Signika Negative", sans-serif;
+}
+.silder-section .silder-head img {
+  right: 165px;
+}
+
+.boxdiv {
+  background: #f9f9f9;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  text-align: center;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+  min-height: 100px;
+  border-radius: 5px;
+  align-items: center;
+  transition: 0.5s all;
+}
+
+.contact-information-box {
+  background: #fff;
+  /* position: relative; */
+  /* padding: 0px 2px; */
+  border-radius: 80px;
+  z-index: 1;
+  /* top: 0; */
+  margin-bottom: 52px;
+  /* margin-top: -140px; */
+  border: 1px solid #f2eee2;
+}
+
+.footer-box {
+  display: flexbox;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  position: relative;
+}
+
+.angle-shap {
+  border-right: 1px solid #ebebeb;
+  border-left: 1px solid #ebebeb;
+}
+
+.footer-box i {
+  font-size: 41px;
+  color: #2490eb;
+  align-items: center;
+  text-align: center;
+  padding: 18px 29px;
+}
+
+.footer-box-content {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.footer-box-content h3 {
+  font-weight: 600;
+  font-size: 17px;
+  margin-bottom: 0;
+  color: #222;
+  letter-spacing: 0.5px;
+}
+
+.contact-information-box .footer-box-content p {
+  margin: 0;
+  color: #222;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.with-100 {
+  width: 100%;
+}
+
+.right_fix_btn {
+  position: fixed;
+  width: 53px;
+  z-index: 99999;
+  bottom: 30px;
+  right: 20px;
+}
+
+.right_fix_btn a {
+  margin-bottom: 20px;
+  display: block;
+}
+
+.coccoc-alo-ph-img-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 100%;
+  border: 0px solid rgba(0, 0, 0, 0);
+  opacity: 1;
+  padding: 5px;
+}
+
+.coman-section {
+  background-color: #f9f9f9;
+  padding-top: 104px;
+  padding-bottom: 40px;
+}
+
+.contacus {
+  border: 2px solid #f3f3f3;
+  border-radius: 13px;
+  padding: 20px;
+}
+.contacus .icons {
+  font-size: 26px;
+  padding: 16px;
+  border-radius: 50px;
+  color: #2490eb;
+  border: 2px solid #2490eb;
+  width: 60px;
+  height: 60px;
+  line-height: 30px;
+}
+
+.mediaicons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mediaicons .button {
+  height: 60px;
+  margin: 0 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 0px 2px rgba(0, 0, 0, 0.25), 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+.mediaicons .button span {
+  font-weight: 600;
+  margin-left: 10px;
+  margin-right: 30px;
+  position: relative;
+  top: -3px;
+}
+.mediaicons .button .icon {
+  display: inline-block;
+  height: 60px;
+  width: 60px;
+  line-height: 66px;
+  text-align: center;
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: all 0.3s ease-out;
+  border: none;
+}
+.mediaicons .button .icon i {
+  font-weight: 600;
+  transition: all 0.3s ease-out;
+  text-align: center;
+  font-size: 30px;
+  color: #fff;
+}
+
+.offcanvas {
+  z-index: 99999;
+}
+.offcanvas .offcanvas-body .accordion .itemmenu {
+  padding: 1rem 1.25rem;
+  display: flex;
+  width: 100%;
+  text-decoration: none;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+button.accordion-button {
+  background: #2490eb;
+  font-size: 16px !important;
+  text-transform: capitalize;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  border-radius: 4px;
+  padding: 20px 20px;
+}
+
+.btn-close {
+  opacity: 1;
+  padding-right: 36px !important;
+}
+
+.footer-bottom {
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  background: #f0efef;
+}
+
+/* Breakpoints Device // bp = breckpoints
+	// sm = small
+	// md = medium
+	// lg = large
+	// xl = extra large
+	// xxl = extra extra large
+*/
+/* No media query for `xs` since this is the default in Bootstrap */
+/* Small devices (landscape phones, 576px and up) */
+/* // Medium devices (tablets, 768px and up) */
+/* // Large devices (desktops, 992px and up) */
+/* // X-Large devices (large desktops, 1200px and up) */
+/* // X-Large devices (large desktops, less than 1400px) */
+/* // XX-Large devices (larger desktops, 1400px and up) */
+/* // X-Large devices (large desktops, less than 1400px) */
+/* // Large devices (desktops, less than 1200px) */
+/* // Medium devices (tablets, less than 992px) */
+@media (max-width: 991.98px) {
+  .mediaicons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mediaicons .button {
+    height: auto;
+    width: 50%;
+    padding: 10px 0;
+  }
+  .mediaicons .button span {
+    margin-right: 0;
+  }
+  .mediaicons .button .icon {
+    height: 30px;
+    width: 30px;
+    line-height: 30px;
+  }
+}
+/* // Small devices (landscape phones, less than 768px) */
+@media (max-width: 767.98px) {
+  .footer-bottom {
+    position: fixed;
+    bottom: 0;
+  }
+  .silder-section {
+    height: auto;
+  }
+  .mediaicons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mediaicons .button {
+    height: auto;
+    width: 50%;
+    padding: 10px 0;
+  }
+  .mediaicons .button span {
+    margin-right: 0;
+  }
+  .mediaicons .button .icon {
+    height: 30px;
+    width: 30px;
+    line-height: 30px;
+  }
+}
+/* // X-Small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+  .footer-bottom {
+    position: fixed;
+    bottom: 0;
+  }
+  .coman-section {
+    padding-top: 82px;
+    padding-bottom: 21px;
+  }
+  .mediaicons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mediaicons .button {
+    height: auto;
+    width: 50%;
+    padding: 10px 0;
+  }
+  .mediaicons .button span {
+    margin-right: 0;
+  }
+  .mediaicons .button .icon {
+    height: 30px;
+    width: 30px;
+    line-height: 30px;
+  }
+  .silder-section {
+    height: auto;
+  }
+  .header-section {
+    border-bottom: 1px solid #EBDDBF;
+  }
+  .header-section .navbar-brand img {
+    position: relative;
+  }
+  .header-section .navbar-toggler {
+    position: absolute;
+    right: 0;
+    top: 15px;
+  }
+  .header-section .navbar-toggler:focus {
+    box-shadow: none;
+  }
+}
+/* // XX-Large devices (larger desktops) */
+/* // No media query since the xxl breakpoint has no upper bound on its width */
+.btn-button {
+  color: #2490eb;
+  border-color: #2490eb;
+}
+.btn-button:focus {
+  box-shadow: none;
+}
+.btn-button:hover {
+  transition: 0.3s ease;
+  background-color: #2490eb;
+  color: #fff !important;
+}
+
+.btn-button-bg {
+  background: #2490eb;
+  border-color: #2490eb;
+}
+.btn-button-bg:focus {
+  box-shadow: none;
+}
+.btn-button-bg:hover {
+  transition: 0.3s ease;
+  background-color: transparent !important;
+  color: #222 !important;
+}
+
+/* Breakpoints Device // bp = breckpoints
+	// sm = small
+	// md = medium
+	// lg = large
+	// xl = extra large
+	// xxl = extra extra large
+*/
+/* No media query for `xs` since this is the default in Bootstrap */
+/* Small devices (landscape phones, 576px and up) */
+/* // Medium devices (tablets, 768px and up) */
+/* // Large devices (desktops, 992px and up) */
+/* // X-Large devices (large desktops, 1200px and up) */
+/* // X-Large devices (large desktops, less than 1400px) */
+/* // XX-Large devices (larger desktops, 1400px and up) */
+/* // X-Large devices (large desktops, less than 1400px) */
+/* // Large devices (desktops, less than 1200px) */
+/* // Medium devices (tablets, less than 992px) */
+/* // Small devices (landscape phones, less than 768px) */
+/* // X-Small devices (portrait phones, less than 576px) */
+/* // XX-Large devices (larger desktops) */
+/* // No media query since the xxl breakpoint has no upper bound on its width *//*# sourceMappingURL=style.css.map */

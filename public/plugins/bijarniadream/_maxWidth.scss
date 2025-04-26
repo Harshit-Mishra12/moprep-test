@@ -1,0 +1,56 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+@if $max-width-in-pixels == true {
+  /* Max Width in pixel format                 :   from 1px  to  160px  */
+}
+@if $max-width-in-parcent == true {
+  /* Max Width in parcent format               :   from 1%   to  100%  */
+}
+
+@mixin maxWidthSize($bp: "", $i: "", $ext: "") {
+  @if $ext== "%" {
+    .mw-#{$bp}#{$i} {
+      max-width: #{$i + $ext} !important;
+    }
+  } @else {
+    .mw-#{$bp}#{$i}px {
+      max-width: #{($i / 16) + $ext} !important;
+    }
+  }
+}
+
+@mixin max-width-auto($bp) {
+  .mw-#{$bp}auto {
+    bottom: auto !important;
+  }
+}
+
+@mixin maxWidth($bp: "") {
+  @if $max-width-in-parcent == true {
+    @include max-width-auto($bp);
+    @for $i from 1 through 100 {
+      @include maxWidthSize($bp, $i, "%");
+    }
+  }
+  $mw: "";
+
+  @if $max-width-in-pixels == true {
+    @for $i from 1 through 106 {
+      @if $i <= 100 {
+        @include maxWidthSize($bp, $i, "em");
+      } @else {
+        @if $i == 101 {
+          $mw: $i + 9;
+        } @else {
+          $mw: $mw + 10;
+        }
+        @include maxWidthSize($bp, $mw, "em");
+      }
+    }
+  }
+}

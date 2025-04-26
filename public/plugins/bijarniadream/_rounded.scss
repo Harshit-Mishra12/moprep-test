@@ -1,0 +1,29 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+@if $rounded-corners == true {
+  /* Rounded Corners              :   from 0px  to  50px */
+}
+
+@mixin rounded($bp: "") {
+  @if $rounded-corners == true {
+    $r: 1;
+    @for $i from 0 through 18 {
+      @if $i > 10 {
+        $r: $r + 5;
+        .rounded-#{$bp}#{$r} {
+          border-radius: #{($r / 16)}em !important;
+        }
+      } @else {
+        $r: $i;
+        .rounded-#{$bp}#{$i} {
+          border-radius: #{($i / 16)}em !important;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+// scss-docs-start brecks-map
+$brecks: (
+  "sm": "576",
+  "md": "768",
+  "lg": "992",
+  "xl": "1200",
+  "xxl": "1400",
+) !default;
+// scss-docs-end brecks-map
+
+$breckpoints: true !default;
+
+$width-in-parcent: true !default;
+$width-in-pixels: true !default;
+
+$max-width-in-parcent: false !default;
+$max-width-in-pixels: false !default;
+
+$height-in-parcent: true !default;
+$height-in-pixels: true !default;
+$height-in-viewport: true !default;
+
+$fontSize-in-viewport: true !default;
+
+$z-index: true !default;
+$nagative-z-index: true !default;
+
+$top-position-in-pixel: true !default;
+$nagative-top-position-in-pixel: true !default;
+$top-position-in-parcent: true !default;
+$nagative-top-position-in-parcent: true !default;
+
+$bottom-position-in-pixel: true !default;
+$nagative-bottom-position-in-pixel: true !default;
+$bottom-position-in-parcent: true !default;
+$nagative-bottom-position-in-parcent: true !default;
+
+$left-position-in-pixel: true !default;
+$nagative-left-position-in-pixel: true !default;
+$left-position-in-parcent: true !default;
+$nagative-left-position-in-parcent: true !default;
+
+$right-position-in-pixel: true !default;
+$nagative-right-position-in-pixel: true !default;
+$right-position-in-parcent: true !default;
+$nagative-right-position-in-parcent: true !default;
+
+$display: true !default;
+$backgroundImage: true !default;
+$rounded-corners: true !default;

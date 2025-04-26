@@ -1,0 +1,133 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+@if $right-position-in-pixel == true {
+  /* position right in pixel format            :   from 0px  to  100px */
+  @if $nagative-right-position-in-pixel == true {
+    /* nagative position right in pixel format   :   from -1px to  -100px */
+  }
+}
+@if $right-position-in-parcent == true {
+  /* position right in parcent format          :   from 0%   to  100% */
+  @if $nagative-right-position-in-parcent == true {
+    /* nagative position right in parcent format :   from -1%  to  -100% */
+  }
+}
+
+@mixin rightLoop($bp: "", $to: "", $ext: "") {
+  $rightt: 1;
+  @for $i from 0 through $to {
+    @if $i <= 50 {
+      @if $ext== "%" {
+        .end-#{$bp}#{$i} {
+          right: #{$i}#{$ext} !important;
+        }
+      } @else {
+        .end-#{$bp}#{$i}px {
+          right: #{($i / 16)}#{$ext} !important;
+        }
+      }
+      $rightt: $i;
+    } @else if ($i > 30) {
+      @if ($i < 50) {
+        @if $ext== "%" {
+          .end-#{$bp}#{$rightt + 10} {
+            right: #{$rightt + 10}#{$ext} !important;
+            $rightt: $rightt + 10;
+          }
+        } @else {
+          .end-#{$bp}#{$rightt + 5}px {
+            right: #{(($rightt + 5) / 16)}#{$ext} !important;
+            $rightt: $rightt + 5;
+          }
+        }
+      } @else if($i >= 20) {
+        @if $ext== "%" {
+          .end-#{$bp}#{$rightt + 5} {
+            right: #{$rightt + 5}#{$ext} !important;
+            $rightt: $rightt + 5;
+          }
+        } @else {
+          .end-#{$bp}#{$rightt + 5}px {
+            right: #{(($rightt + 5) / 16)}#{$ext} !important;
+            $rightt: $rightt + 5;
+          }
+        }
+      }
+    }
+  }
+}
+
+@mixin right-auto($bp) {
+  .end-#{$bp}auto {
+    right: auto !important;
+  }
+}
+
+@mixin nagative-right($bp: "", $to: "", $ext: "") {
+  $rightt: 1;
+  $check: 100;
+  @for $i from $to through 1 {
+    @if $i > 100 {
+      $right: $i - 10;
+      $zero: 100;
+      @for $x from 1 through $right {
+        $zero: $zero + 10;
+      }
+      @if $ext== "%" {
+        .end-#{$bp}n#{$zero} {
+          right: -#{$zero}#{$ext} !important;
+        }
+      } @else {
+        .end-#{$bp}n#{$zero}px {
+          right: -#{($zero / 16)}#{$ext} !important;
+        }
+      }
+    } @else if ($i > 50) {
+      @if ($i<=60) {
+        @if $ext== "%" {
+          .end-#{$bp}n#{$check} {
+            right: -#{$check}#{$ext} !important;
+          }
+        } @else {
+          .end-#{$bp}n#{$check}px {
+            right: -#{($check / 16)}#{$ext} !important;
+          }
+        }
+      }
+      $check: $check - 5;
+    } @else if $i <= 50 {
+      @if $ext== "%" {
+        .end-#{$bp}n#{$i} {
+          right: -#{$i}#{$ext} !important;
+        }
+      } @else {
+        .end-#{$bp}n#{$i}px {
+          right: -#{($i / 16)}#{$ext} !important;
+        }
+      }
+    }
+    $i: $i -1;
+  }
+}
+
+@mixin right($bp: "") {
+  @if $right-position-in-pixel == true {
+    @include right-auto($bp);
+    @if $nagative-right-position-in-pixel ==true {
+      @include nagative-right($bp, 60, "em");
+    }
+    @include rightLoop($bp, 60, "em");
+  }
+
+  @if $right-position-in-parcent == true {
+    @if $nagative-right-position-in-parcent ==true {
+      @include nagative-right($bp, 60, "%");
+    }
+    @include rightLoop($bp, 60, "%");
+  }
+}

@@ -1,0 +1,70 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+@if $height-in-pixels == true {
+  /* height in pixel format                    :   from 1px  to  160px */
+}
+@if $height-in-parcent == true {
+  /* height in parcent format                  :   from 1%   to  100% */
+}
+@if $height-in-viewport == true {
+  /* height in viewport format                 :   from 1vh  to  100vh */
+}
+
+@mixin heightSize($className: "", $bp: "", $i: "", $ext: "") {
+  @if $ext== "%" {
+    .#{$className}-#{$bp}#{$i} {
+      height: #{$i + $ext} !important;
+    }
+  } @else {
+    @if $className == "vh" {
+      .#{$className}-#{$bp}#{$i} {
+        height: #{$i + $ext} !important;
+      }
+    } @else {
+      .#{$className}-#{$bp}#{$i}px {
+        height: #{($i / 16) + $ext} !important;
+      }
+    }
+  }
+}
+
+@mixin height-auto($className: "", $bp: "") {
+  .#{$className}-#{$bp}auto {
+    height: auto !important;
+  }
+}
+
+@mixin height($bp: "") {
+  @if $height-in-parcent == true {
+    @include height-auto("h", $bp);
+    @for $i from 0 through 100 {
+      @include heightSize("h", $bp, $i, "%");
+    }
+  }
+  @if $height-in-viewport == true {
+    @include height-auto("vh", $bp);
+    @for $i from 0 through 100 {
+      @include heightSize("vh", $bp, $i, "vh");
+    }
+  }
+  $h: "";
+  @if $height-in-pixels == true {
+    @for $i from 0 through 106 {
+      @if $i <= 100 {
+        @include heightSize("h", $bp, $i, "em");
+      } @else {
+        @if $i == 101 {
+          $h: $i + 9;
+        } @else {
+          $h: $h + 10;
+        }
+        @include heightSize("h", $bp, $h, "em");
+      }
+    }
+  }
+}

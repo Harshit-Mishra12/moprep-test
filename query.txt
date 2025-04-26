@@ -1,0 +1,73 @@
+
+INSERT INTO `menus` (`id`, `label`, `link`, `active_link`, `icon`, `parent`, `sort`, `status`, `created_at`, `updated_at`) VALUES ('66', 'Subject', '#', 'admin/subject/*', 'fa fa-book', '34', '1', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO `menus` (`id`, `label`, `link`, `active_link`, `icon`, `parent`, `sort`, `status`, `created_at`, `updated_at`) VALUES ('67', 'Add', 'admin/subject/add', 'admin/subject/add', '', '66', '1', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), ('68', 'List', 'admin/subject/list', 'admin/subject/list', '', '66', '2', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '66', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '67', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '68', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+
+ALTER TABLE `bulk_question_years` ADD `course_id` BIGINT NOT NULL AFTER `id`;
+
+ALTER TABLE `mockups` ADD `course_id` BIGINT NOT NULL AFTER `id`;
+
+ALTER TABLE `subscriptions` ADD `course_id` BIGINT NOT NULL AFTER `id`;
+
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '66', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '67', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '68', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+
+
+ALTER TABLE `chapters` CHANGE `course_id` `subject_id` BIGINT(20) UNSIGNED NOT NULL;
+
+
+ALTER TABLE `questions` ADD `subject_id` BIGINT UNSIGNED NOT NULL AFTER `course_id`;
+
+RENAME TABLE `edu`.`subjects` TO `edu`.`course_master`;
+================================================================================================
+28/01/2025
+-----------
+ALTER TABLE `courses` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `id`;
+
+INSERT INTO `menus` (`id`, `label`, `link`, `active_link`, `icon`, `parent`, `sort`, `status`, `created_at`, `updated_at`) VALUES ('66', 'Course', '#', 'admin/coursemaster/*', 'fa fa-book', '34', '1', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO `menus` (`id`, `label`, `link`, `active_link`, `icon`, `parent`, `sort`, `status`, `created_at`, `updated_at`) VALUES ('67', 'Add', 'admin/coursemaster/add', 'admin/coursemaster/add', '', '66', '1', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), ('68', 'List', 'admin/coursemaster/list', 'admin/coursemaster/list', '', '66', '2', '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+ALTER TABLE `chapters` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `id`;
+
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '66', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '67', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+INSERT INTO `user_roles` (`id`, `designation_id`, `menu_id`, `status`, `created_at`, `updated_at`) VALUES (NULL, '1', '68', '1', '2024-03-14 10:35:01', '2024-07-23 12:09:10');
+
+ALTER TABLE `courses` ADD `course_master_id` INT NULL DEFAULT NULL AFTER `description`;
+
+ALTER TABLE `questions` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `updated_at`;
+
+ALTER TABLE `topic_materials` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `id`;
+
+ALTER TABLE `mockups` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `id`;
+ALTER TABLE `bulk_question_years` ADD `course_master_id` BIGINT NOT NULL AFTER `id`;
+
+ALTER TABLE `subscriptions` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `id`;
+ALTER TABLE `question_bank_answers` ADD `course_master_id` INT NULL DEFAULT NULL AFTER `bulk_table_id`;
+
+05/02/2025
+-----------
+ALTER TABLE `transactions` ADD `course_master_id` BIGINT UNSIGNED NOT NULL AFTER `user_id`;
+
+12/02/2025
+-----------
+ALTER TABLE `mockups` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `image`;
+ALTER TABLE `questions` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `question_id`;
+ALTER TABLE `mock_questions` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `question_id`;
+ALTER TABLE `bulk_questions` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;
+
+14/02/2025
+-----------
+ALTER TABLE `course_masters` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;
+ALTER TABLE `courses` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;
+
+15/02/2025
+-----------
+ALTER TABLE `chapters` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;
+ALTER TABLE `bulk_question_years` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;
+ALTER TABLE `topic_materials` ADD `is_live` TINYINT NOT NULL DEFAULT '0' AFTER `status`;

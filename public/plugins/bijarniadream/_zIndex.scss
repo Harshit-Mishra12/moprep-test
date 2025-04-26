@@ -1,0 +1,76 @@
+// bp = breckpoints
+// sm = small
+// md = medium
+// lg = large
+// xl = extra large
+// xxl = extra extra large
+
+
+@if $z-index == true {
+  /* z-index                                   :   from 0    to  10000000000 */
+  @if $nagative-z-index == true {
+}
+  /* nagative z-index                          :   from -1   to  -10000000000 */
+}
+
+@mixin zIndexLoop($bp: "", $to: "", $ext: "") {
+  $zi: 1;
+  @for $i from 0 through $to {
+    @if $i <= 10 {
+      .zi-#{$bp}#{$i} {
+        z-index: #{$i}#{$ext} !important;
+      }
+      $zi: $i;
+    } @else if ($i > 10) {
+      @if ($i < 20) {
+        .zi-#{$bp}#{$zi + 10} {
+          z-index: #{$zi + 10}#{$ext} !important;
+          $zi: $zi + 10;
+        }
+      } @else if($i >= 20) {
+        .zi-#{$bp}#{$zi + "0"} {
+          z-index: #{$zi + "0"}#{$ext} !important;
+          $zi: $zi + "0";
+        }
+      }
+    }
+  }
+}
+
+@mixin nagative($bp: "", $to: "", $ext: "") {
+  $zi: 1;
+  $check: 100;
+  @for $i from $to through 1 {
+    @if $i > 20 {
+      $index: $i - 20;
+      $zero: 100;
+      @for $x from 1 through $index {
+        $zero: $zero + "0";
+      }
+      .zi-#{$bp}n#{$zero} {
+        z-index: -#{$zero}#{$ext} !important;
+      }
+    } @else if ($i > 10) {
+      @if ($i<=20) {
+        .zi-#{$bp}n#{$check} {
+          z-index: -#{$check}#{$ext} !important;
+        }
+      }
+      $check: $check - 10;
+    } @else if $i <10 {
+      .zi-#{$bp}n#{$i} {
+        z-index: -#{$i}#{$ext} !important;
+      }
+    }
+    $i: $i -1;
+  }
+}
+
+@mixin zIndex($bp: "") {
+  @if $z-index == true {
+    @if $nagative-z-index==true {
+      @include nagative($bp, 28, "");
+    }
+    @include zIndexLoop($bp, 25, "");
+  }
+}

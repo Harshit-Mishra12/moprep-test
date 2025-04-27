@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Chapter;
@@ -82,16 +82,16 @@ class TopicMaterialsController extends Controller
 		$result = [];
 		$courses = CourseMaster::where('status', '1')->orderBy('id', 'DESC')->get();
 		$subject = Course::where('status', '1')->orderBy('id', 'DESC')->get();
-		return view('admin.topic_materials.add', compact('result', 'courses','subject'));
+		return view('admin.topic_materials.add', compact('result', 'courses', 'subject'));
 	}
 
 	public function topicMaterialList()
 	{
-		$result=\App\Models\TopicMaterials::orderBy('id','DESC')->get();
+		$result = \App\Models\TopicMaterials::orderBy('id', 'DESC')->get();
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['15']) ? $permission['15'] : null;
 
-		return view('admin.topic_materials.list',compact('result','permission'));
+		return view('admin.topic_materials.list', compact('result', 'permission'));
 	}
 
 	public function topicMaterialListData(Request $request)
@@ -161,11 +161,11 @@ class TopicMaterialsController extends Controller
 					$deleteUrl = url('admin/topic-materials/delete/' . $row->id);
 
 					$viewBtn = '<a href="' . $viewUrl . '" title="View Questions" target="_blank" style="line-height:1px;" class="btn btn-tbl-edit btn_change"><i style="margin-right: 0px;" class="fa fa-eye"></i></a>';
-					if(isset($permission) && $permission['edit'] == 'true'){
+					if (isset($permission) && $permission['edit'] == 'true') {
 						$editBtn = '<a href="' . $editUrl . '" title="Edit Topic Materials" class="btn btn-tbl-edit btn_change"><i class="fas fa-pencil-alt"></i></a>';
 					}
 
-					if(isset($permission) && $permission['delete'] == 'true'){
+					if (isset($permission) && $permission['delete'] == 'true') {
 						$deleteBtn = '<a href="' . $deleteUrl . '" title="Delete Topic Materials" onclick="return confirm(\'Are you sure? You want to delete this topic materials.\')" class="btn btn-tbl-delete btn_change"><i class="fas fa-trash"></i></a>';
 					}
 
@@ -196,9 +196,9 @@ class TopicMaterialsController extends Controller
 		if ($result) {
 			// $courses = CourseMaster::where('status', '1')->orderBy('id', 'DESC')->get();
 			$subject = Course::where('status', '1')->orderBy('id', 'DESC')->get();
-// 			dd($subject);
+			// 			dd($subject);
 			$chapter = Chapter::where('status', '1')->where('course_id', $result->course_id)->orderBy('id', 'DESC')->get();
-			return view('admin.topic_materials.add', compact('result','subject','chapter'));
+			return view('admin.topic_materials.add', compact('result', 'subject', 'chapter'));
 		} else {
 
 			return redirect()->back()->with('5fernsadminerror', 'Something went wrong. Please try again.');

@@ -1796,33 +1796,114 @@ class PostLoginController extends Controller
 		die;
 	}
 
+	// public function mockTestSubmitAuto(Request $request)
+	// {
+	// 	$user_id = $request->user()->id;
+	// 	$user_name = $request->user()->name;
+	// 	$currentDateTime = Carbon::now();
+
+	// 	//$mockDurationData = DB::table('mockup_test_duration')->where("user_id",$user_id)->where('end_date_time','<=',$currentDateTime)->get();
+
+	// 	$mockDurationData = DB::table('mockup_test_duration as d')
+	// 		->leftJoin('mockup_test_result as r', function ($join) use ($user_id) {
+	// 			$join->on('d.user_id', '=', 'r.user_id')
+	// 				->on('d.mock_id', '=', 'r.mock_id')
+	// 				->where('r.user_id', $user_id); // Added condition for user_id
+	// 		})
+	// 		->where('d.user_id', $user_id)
+	// 		->where('d.end_date_time', '<=', $currentDateTime)
+	// 		->where('r.mock_id', null)
+	// 		->select('d.*')
+	// 		->get();
+
+	// 	if (!empty($mockDurationData)) {
+	// 		foreach ($mockDurationData as $mock) {
+	// 			$mock_id = $mock->mock_id;
+	// 			$mockData = DB::table('mockups')->where('id', $mock_id)->first();
+
+	// 			if (!empty($mockData)) {
+	// 				$average_time = $mockData->duration;
+
+	// 				$answered_questions = DB::table('mockup_test_answers')
+	// 					->where([
+	// 						'user_id' => $user_id,
+	// 						'mock_id' => $mock_id
+	// 					])
+	// 					->select(DB::raw('COUNT(*) as attempted_questions'))
+	// 					->selectRaw('SUM(CASE WHEN answer_status = 1 THEN 1 ELSE 0 END) as right_answers')
+	// 					->selectRaw('SUM(CASE WHEN answer_status = 2 THEN 1 ELSE 0 END) as wrong_answers')
+	// 					->first();
+
+	// 				$total_questions = DB::table('mock_questions')->where([
+	// 					'mock_id' => $mock_id
+	// 				])->count();
+
+
+	// 				$ansData = [
+	// 					"user_id" => $user_id,
+	// 					"mock_id" => (int) $mock_id,
+	// 					"user_name" => $user_name,
+	// 					"total_questions" => $total_questions,
+	// 					"attempted_questions" => $answered_questions->attempted_questions,
+	// 					"right_answers" => $answered_questions->right_answers,
+	// 					"wrong_answers" => $answered_questions->wrong_answers,
+	// 					"average_time" => (int) $average_time,
+	// 					"marks" => (string) round(($answered_questions->right_answers * 2.08) - ($answered_questions->wrong_answers * 0.69), '2')
+	// 				];
+
+	// 				$checkMock = DB::table('mockup_test_result')->where(['user_id' => $user_id, "mock_id" => $mock_id])->first();
+	// 				if (!empty($checkMock)) {
+	// 					DB::table('mockup_test_result')->where(['id' => $checkMock->id])->update($ansData);
+	// 				} else {
+	// 					DB::table('mockup_test_result')->insert($ansData);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	return response(["error" => false, "message" => "Exam submitted successfully."], 200);
+	// }
+
+
 	public function mockTestSubmitAuto(Request $request)
 	{
 		$user_id = $request->user()->id;
 		$user_name = $request->user()->name;
 		$currentDateTime = Carbon::now();
 
-		//$mockDurationData = DB::table('mockup_test_duration')->where("user_id",$user_id)->where('end_date_time','<=',$currentDateTime)->get();
-
 		$mockDurationData = DB::table('mockup_test_duration as d')
 			->leftJoin('mockup_test_result as r', function ($join) use ($user_id) {
 				$join->on('d.user_id', '=', 'r.user_id')
 					->on('d.mock_id', '=', 'r.mock_id')
-					->where('r.user_id', $user_id); // Added condition for user_id
+					->where('r.user_id', $user_id);
 			})
 			->where('d.user_id', $user_id)
 			->where('d.end_date_time', '<=', $currentDateTime)
-			->where('r.mock_id', null)
+			->whereNull('r.mock_id')
 			->select('d.*')
 			->get();
-
 		if (!empty($mockDurationData)) {
 			foreach ($mockDurationData as $mock) {
-				$mock_id = $mock->mock_id;
+				$mock_id = (int) $mock->mock_id;
 				$mockData = DB::table('mockups')->where('id', $mock_id)->first();
 
 				if (!empty($mockData)) {
 					$average_time = $mockData->duration;
+
+					// Get course master ID from mockData
+					$courseMasterId = $mockData->course_master_id ?? null;
+
+					$positiveMark = 2.08; // default
+					$negativeMark = 0.69; // default
+
+					// Fetch positive and negative marks if course_master_id is present
+					if (!empty($courseMasterId)) {
+						$courseMasterData = DB::table('course_masters')->where('id', $courseMasterId)->first();
+						if (!empty($courseMasterData)) {
+							$positiveMark = (float) $courseMasterData->positive_mark;
+							$negativeMark = (float) $courseMasterData->negative_mark;
+						}
+					}
 
 					$answered_questions = DB::table('mockup_test_answers')
 						->where([
@@ -1838,21 +1919,31 @@ class PostLoginController extends Controller
 						'mock_id' => $mock_id
 					])->count();
 
+					$marks = round(
+						($answered_questions->right_answers * $positiveMark) -
+							($answered_questions->wrong_answers * $negativeMark),
+						2
+					);
+
 					$ansData = [
 						"user_id" => $user_id,
-						"mock_id" => (int) $mock_id,
+						"mock_id" => $mock_id,
 						"user_name" => $user_name,
 						"total_questions" => $total_questions,
 						"attempted_questions" => $answered_questions->attempted_questions,
 						"right_answers" => $answered_questions->right_answers,
 						"wrong_answers" => $answered_questions->wrong_answers,
 						"average_time" => (int) $average_time,
-						"marks" => (string) round(($answered_questions->right_answers * 2.08) - ($answered_questions->wrong_answers * 0.69), '2')
+						"marks" => (string) $marks,
 					];
 
-					$checkMock = DB::table('mockup_test_result')->where(['user_id' => $user_id, "mock_id" => $mock_id])->first();
+					$checkMock = DB::table('mockup_test_result')->where([
+						'user_id' => $user_id,
+						"mock_id" => $mock_id
+					])->first();
+
 					if (!empty($checkMock)) {
-						DB::table('mockup_test_result')->where(['id' => $checkMock->id])->update($ansData);
+						DB::table('mockup_test_result')->where('id', $checkMock->id)->update($ansData);
 					} else {
 						DB::table('mockup_test_result')->insert($ansData);
 					}
@@ -1862,6 +1953,7 @@ class PostLoginController extends Controller
 
 		return response(["error" => false, "message" => "Exam submitted successfully."], 200);
 	}
+
 
 	public function mockTestAnswers(Request $request)
 	{

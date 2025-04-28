@@ -39,7 +39,6 @@ class AdminController extends Controller
 				'confirm_password' => 'required|min:8|same:password',
 			];
 			$validator = Validator::make($request->all(), $rules);
-
 			if ($validator->fails()) {
 				$message = [];
 				$messages_l = json_decode(json_encode($validator->messages()), true);

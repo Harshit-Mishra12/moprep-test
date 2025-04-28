@@ -38,7 +38,6 @@ class AdminController extends Controller
 				'password' => 'required|min:8',
 				'confirm_password' => 'required|min:8|same:password',
 			];
-
 			$validator = Validator::make($request->all(), $rules);
 
 			if ($validator->fails()) {

@@ -17,6 +17,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.0"
+      # 👇 Add this step before composer install!
+      - name: Prepare Laravel directories
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache storage
 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader

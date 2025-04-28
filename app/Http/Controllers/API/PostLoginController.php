@@ -1911,7 +1911,7 @@ class PostLoginController extends Controller
 					// Log mock_id, positive mark, and negative mark
 					Log::info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
 
-
+					Log::channel('stack')->info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
 					$answered_questions = DB::table('mockup_test_answers')
 						->where([
 							'user_id' => $user_id,

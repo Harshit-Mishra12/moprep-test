@@ -1915,6 +1915,8 @@ class PostLoginController extends Controller
 		$user_name = $request->user()->name;
 		$currentDateTime = Carbon::now();
 
+
+
 		$mockDurationData = DB::table('mockup_test_duration as d')
 			->leftJoin('mockup_test_result as r', function ($join) use ($user_id) {
 				$join->on('d.user_id', '=', 'r.user_id')
@@ -1950,8 +1952,10 @@ class PostLoginController extends Controller
 						}
 					}
 
+					// dd($positiveMark);
+
 					// Log mock_id, positive mark, and negative mark
-					\Log::info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
+					//	dd("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
 					// \Log::info('Response dari API:', ['response' => $response]);
 
 					$answered_questions = DB::table('mockup_test_answers')
@@ -2135,8 +2139,6 @@ class PostLoginController extends Controller
 			200
 		);
 	}
-
-
 	public function mockTestEnd(Request $request)
 	{
 		$user_id = $request->user()->id;
@@ -2144,6 +2146,22 @@ class PostLoginController extends Controller
 		$mock_id = $request->post('mock_id');
 		$average_time = $request->post('average_time');
 
+		// Fetch mock data
+		$mockData = DB::table('mockups')->where('id', $mock_id)->first();
+
+		$positiveMark = 2.08; // default
+		$negativeMark = 0.69; // default
+
+		// Fetch positive/negative marks from course_masters
+		if (!empty($mockData) && !empty($mockData->course_master_id)) {
+			$courseMasterData = DB::table('course_masters')->where('id', $mockData->course_master_id)->first();
+			if (!empty($courseMasterData)) {
+				$positiveMark = (float) $courseMasterData->positive_mark;
+				$negativeMark = (float) $courseMasterData->negative_mark;
+			}
+		}
+
+		// Fetch answered questions
 		$answered_questions = DB::table('mockup_test_answers')
 			->where([
 				'user_id' => $user_id,
@@ -2158,6 +2176,13 @@ class PostLoginController extends Controller
 			'mock_id' => $mock_id
 		])->count();
 
+		// Calculate marks dynamically
+		$marks = round(
+			($answered_questions->right_answers * $positiveMark) -
+				($answered_questions->wrong_answers * $negativeMark),
+			2
+		);
+
 		$ansData = [
 			"user_id" => $user_id,
 			"mock_id" => (int) $mock_id,
@@ -2167,18 +2192,73 @@ class PostLoginController extends Controller
 			"right_answers" => $answered_questions->right_answers,
 			"wrong_answers" => $answered_questions->wrong_answers,
 			"average_time" => (int) $average_time,
-			"marks" => (string) round(($answered_questions->right_answers * 2.08) - ($answered_questions->wrong_answers * 0.69), '2')
+			"marks" => (string) $marks,
 		];
 
-		$checkMock = DB::table('mockup_test_result')->where(['user_id' => $user_id, "mock_id" => $mock_id])->first();
+		$checkMock = DB::table('mockup_test_result')->where([
+			'user_id' => $user_id,
+			"mock_id" => $mock_id
+		])->first();
+
 		if (!empty($checkMock)) {
 			DB::table('mockup_test_result')->where(['id' => $checkMock->id])->update($ansData);
 		} else {
 			DB::table('mockup_test_result')->insert($ansData);
 		}
 
-		return response(["error" => false, "message" => "Mock test submited successfully.", "mock_id" => (int) $mock_id, "result" => $ansData], 200);
+		return response([
+			"error" => false,
+			"message" => "Mock test submitted successfully.",
+			"mock_id" => (int) $mock_id,
+			"result" => $ansData
+		], 200);
 	}
+
+
+	// public function mockTestEnd(Request $request)
+	// {
+	// 	$user_id = $request->user()->id;
+	// 	$user_name = $request->user()->name;
+	// 	$mock_id = $request->post('mock_id');
+	// 	$average_time = $request->post('average_time');
+
+	// 	$answered_questions = DB::table('mockup_test_answers')
+	// 		->where([
+	// 			'user_id' => $user_id,
+	// 			'mock_id' => $mock_id
+	// 		])
+	// 		->select(DB::raw('COUNT(*) as attempted_questions'))
+	// 		->selectRaw('SUM(CASE WHEN answer_status = 1 THEN 1 ELSE 0 END) as right_answers')
+	// 		->selectRaw('SUM(CASE WHEN answer_status = 2 THEN 1 ELSE 0 END) as wrong_answers')
+	// 		->first();
+
+	// 	$total_questions = DB::table('mock_questions')->where([
+	// 		'mock_id' => $mock_id
+	// 	])->count();
+
+
+
+	// 	$ansData = [
+	// 		"user_id" => $user_id,
+	// 		"mock_id" => (int) $mock_id,
+	// 		"user_name" => $user_name,
+	// 		"total_questions" => $total_questions,
+	// 		"attempted_questions" => $answered_questions->attempted_questions,
+	// 		"right_answers" => $answered_questions->right_answers,
+	// 		"wrong_answers" => $answered_questions->wrong_answers,
+	// 		"average_time" => (int) $average_time,
+	// 		"marks" => (string) round(($answered_questions->right_answers * 2.08) - ($answered_questions->wrong_answers * 0.69), '2')
+	// 	];
+
+	// 	$checkMock = DB::table('mockup_test_result')->where(['user_id' => $user_id, "mock_id" => $mock_id])->first();
+	// 	if (!empty($checkMock)) {
+	// 		DB::table('mockup_test_result')->where(['id' => $checkMock->id])->update($ansData);
+	// 	} else {
+	// 		DB::table('mockup_test_result')->insert($ansData);
+	// 	}
+
+	// 	return response(["error" => false, "message" => "Mock test submited successfully.", "mock_id" => (int) $mock_id, "result" => $ansData], 200);
+	// }
 
 	public function mockTestAnalysis(Request $request)
 	{

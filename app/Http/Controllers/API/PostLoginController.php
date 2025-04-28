@@ -12,6 +12,8 @@ use Hash;
 use Stripe;
 use Carbon\Carbon;
 use App\Models\Course;
+use Illuminate\Support\Facades\Log;
+
 
 class PostLoginController extends Controller
 {
@@ -1882,6 +1884,7 @@ class PostLoginController extends Controller
 			->whereNull('r.mock_id')
 			->select('d.*')
 			->get();
+
 		if (!empty($mockDurationData)) {
 			foreach ($mockDurationData as $mock) {
 				$mock_id = (int) $mock->mock_id;
@@ -1904,6 +1907,10 @@ class PostLoginController extends Controller
 							$negativeMark = (float) $courseMasterData->negative_mark;
 						}
 					}
+
+					// Log mock_id, positive mark, and negative mark
+					Log::info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
+
 
 					$answered_questions = DB::table('mockup_test_answers')
 						->where([

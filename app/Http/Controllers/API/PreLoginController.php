@@ -164,7 +164,7 @@ class PreLoginController extends Controller
 		$userResult = \App\Models\User::where([
 			['whatsapp_number', '=', $request->post('mobile')],
 		])->first();
-		// 			dd($userResult->createToken('authToken')->accessToken);
+		dd($userResult->createToken('authToken')->accessToken);
 		$rules = [
 			'mobile' => 'required|numeric|digits:10',
 			'password' => 'required|min:6',

@@ -20,7 +20,6 @@ class PostLoginController extends Controller
 	public function bannerList(Request $request)
 	{
 		$banners = \App\Models\Banner::where('status', 'Active')->orderBy('id', 'DESC')->get();
-
 		if ($banners->count() == 0) {
 			return response(array("error" => true, "message" => "Banners not found. ", "result" => array()), 400);
 		}

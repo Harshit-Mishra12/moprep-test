@@ -1882,7 +1882,6 @@ class PostLoginController extends Controller
 			->whereNull('r.mock_id')
 			->select('d.*')
 			->get();
-
 		if (!empty($mockDurationData)) {
 			foreach ($mockDurationData as $mock) {
 				$mock_id = (int) $mock->mock_id;

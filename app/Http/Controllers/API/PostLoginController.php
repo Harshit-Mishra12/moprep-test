@@ -1677,20 +1677,62 @@ class PostLoginController extends Controller
 	{
 		$currentDateTime = now()->format('Y-m-d H:i');
 		$mock_id = $request->post('mock_id');
+
+		// Fetch mock data from mockups table
 		$data = \App\Models\Mockup::where('id', $mock_id)->first();
+
+		// Get the course_master_id from the mockups table
+		$courseMasterId = $data->course_master_id ?? null;
+
+		// Fetch positive and negative marks from course_masters table
+		$positiveMark = 2.08;  // Default value
+		$negativeMark = 0.69;  // Default value
+
+		if ($courseMasterId) {
+			$courseMasterData = DB::table('course_masters')->where('id', $courseMasterId)->first();
+			if ($courseMasterData) {
+				$positiveMark = (float) $courseMasterData->positive_mark;
+				$negativeMark = (float) $courseMasterData->negative_mark;
+			}
+		}
+
+		// Calculate total questions
 		$totalQuestions = DB::table('mock_questions')->where('mock_id', $mock_id)->count();
 
-		return response(array(
+		// Calculate total marks based on the total questions and positive marks
+		$totalMarks = round($totalQuestions * $positiveMark, 2);
+
+		return response([
 			"error" => false,
-			"message" => "Data fatched successfuly.",
+			"message" => "Data fetched successfully.",
 			"mock_id" => $mock_id,
 			"duration" => $data->duration . ' Mins',
 			"total_questions" => $totalQuestions . ' Questions',
-			"total_marks" => round($totalQuestions * '2.08', '2') . ' Marks',
-			"correct_marks" => "+2.08",
-			"incorrect_marks" => "-0.69"
-		), 200);
+			"total_marks" => $totalMarks . ' Marks',
+			"correct_marks" => "+" . $positiveMark,
+			"incorrect_marks" => "-" . $negativeMark
+		], 200);
 	}
+
+
+	// public function mockTestInstructions(Request $request)
+	// {
+	// 	$currentDateTime = now()->format('Y-m-d H:i');
+	// 	$mock_id = $request->post('mock_id');
+	// 	$data = \App\Models\Mockup::where('id', $mock_id)->first();
+	// 	$totalQuestions = DB::table('mock_questions')->where('mock_id', $mock_id)->count();
+
+	// 	return response(array(
+	// 		"error" => false,
+	// 		"message" => "Data fatched successfuly.",
+	// 		"mock_id" => $mock_id,
+	// 		"duration" => $data->duration . ' Mins',
+	// 		"total_questions" => $totalQuestions . ' Questions',
+	// 		"total_marks" => round($totalQuestions * '2.08', '2') . ' Marks',
+	// 		"correct_marks" => "+2.08",
+	// 		"incorrect_marks" => "-0.69"
+	// 	), 200);
+	// }
 
 
 	public function mockTestQuestions(Request $request)
@@ -1909,9 +1951,9 @@ class PostLoginController extends Controller
 					}
 
 					// Log mock_id, positive mark, and negative mark
-					Log::info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
+					\Log::info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
+					// \Log::info('Response dari API:', ['response' => $response]);
 
-					Log::channel('stack')->info("Mock ID: {$mock_id} | Positive Mark: {$positiveMark} | Negative Mark: {$negativeMark}");
 					$answered_questions = DB::table('mockup_test_answers')
 						->where([
 							'user_id' => $user_id,

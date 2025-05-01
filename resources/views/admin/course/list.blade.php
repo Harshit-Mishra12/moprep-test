@@ -6,32 +6,32 @@
 
 <section class="content">
     <div class="container-fluid">
-		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				<div class="card">
-					<div class="header">
-						<h2><i class="fa fa-th"></i>  Go To</h2>
-					</div>
-					<div class="body">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="card">
+                    <div class="header">
+                        <h2><i class="fa fa-th"></i> Go To</h2>
+                    </div>
+                    <div class="body">
 
                         @if(isset($permission) && $permission['write'] == 'true')
-                            <div class="btn-group top-head-btn">
-                                <a class="btn-primary" href="{{ url('admin/course/add') }}">
+                        <div class="btn-group top-head-btn">
+                            <a class="btn-primary" href="{{ url('admin/course/add') }}">
                                 <i class="fa fa-plus"></i> Add Subject
-                                </a>
-                            </div>
+                            </a>
+                        </div>
                         @endIf
 
-					</div>
-				</div>
-			</div>
-		</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <div class="card">
-					<div class="header">
+                    <div class="header">
                         <h2><i class="fa fa-th"></i> Subject List</h2>
-					</div>
+                    </div>
                     <div class="body">
                         <div class="table-responsive">
                             <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4">
@@ -54,7 +54,7 @@
                                                     <th class="center sorting sorting_asc" tabindex="0"
                                                         aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
                                                         style="width: 48.4167px;" aria-sort="ascending"
-                                                        aria-label="#: activate to sort column descending"> Name</th> 
+                                                        aria-label="#: activate to sort column descending"> Name</th>
                                                     <th class="center sorting" tabindex="0"
                                                         aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
                                                         style="width: 193.017px;"
@@ -69,7 +69,7 @@
                                                         aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
                                                         style="width: 85px;"
                                                         aria-label=" Action : activate to sort column ascending"> Action
-                                                    </th> 
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody class="row_position">
@@ -99,25 +99,25 @@
                                                             </label>
                                                         </div>
                                                     </td>
-                                                            <td class="center">
-                                                                <a href="{{ url('admin/course/view/' . $value['id'])}}"
-                                                                    title="View Chapters" class="btn btn-tbl-edit">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                                @if(isset($permission) && $permission['edit'] == 'true')
-                                                                <a href="{{ url('admin/course/update/'.$value['id'] )}}" title="Edit Subject" class="btn btn-tbl-edit">
-                                                                    <i class="fas fa-pencil-alt"></i>
-                                                                </a>
-                                                                @endIf
-                                                                @if(isset($permission) && $permission['delete'] == 'true')
-                                                                <a title="Delete Product" onclick="return confirm('Are you sure? You want to delete this subject.')" href="{{ url('admin/course/delete/'.$value['id'] )}}" class="btn btn-tbl-delete">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </a>
-                                                                @endIf
-                                                            </td>
-														</tr>
-													@endforeach
-												@endif
+                                                    <td class="center">
+                                                        <a href="{{ url('admin/course/view/' . $value['id'])}}"
+                                                            title="View Chapters" class="btn btn-tbl-edit">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        @if(isset($permission) && $permission['edit'] == 'true')
+                                                        <a href="{{ url('admin/course/update/'.$value['id'] )}}" title="Edit Subject" class="btn btn-tbl-edit">
+                                                            <i class="fas fa-pencil-alt"></i>
+                                                        </a>
+                                                        @endIf
+                                                        @if(isset($permission) && $permission['delete'] == 'true')
+                                                        <a title="Delete Product" onclick="return confirm('Are you sure? You want to delete this subject.')" href="{{ url('admin/course/delete/'.$value['id'] )}}" class="btn btn-tbl-delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                        @endIf
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                                @endif
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -128,7 +128,7 @@
                                                     <th class="center" rowspan="1" colspan="1"> Live </th>
                                                     <th class="center" rowspan="1" colspan="1"> Action </th>
 
-                                                </tr>                                                
+                                                </tr>
                                             </tfoot>
                                         </table>
                                     </div>
@@ -143,80 +143,78 @@
 </section>
 
 @endsection
-   
+
 @push('custom_js')
-    <script>
-	
-        $('.-change').change(function() {
+<script>
+    $('.-change').change(function() {
 
-            var status = $(this).prop('checked') == true ? '1' : '0';
-            var id = $(this).data('id');
+        var status = $(this).prop('checked') == true ? '1' : '0';
+        var id = $(this).data('id');
 
-            $.ajax({
-                type: "POST",
-                dataType: "json",
-                url: "{{ route('admin.course.changestatus') }}",
-				headers: {
-					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-				},
-                data: {
-                    'status': status, 
-                    'id': id
-                },
-                beforeSend:function(){
-                    $('#preloader').css('display','block');
-                },
-                error:function(xhr,textStatus){
-					
-                    if(xhr && xhr.responseJSON.message){
-						sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
-					}else{
-						sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
-					}
-                    $('#preloader').css('display','none');
-                },
-                success: function(data){
-					$('#preloader').css('display','none');
-                    sweetAlertMsg('success',data.message);
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "{{ route('admin.course.changestatus') }}",
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: {
+                'status': status,
+                'id': id
+            },
+            beforeSend: function() {
+                $('#preloader').css('display', 'block');
+            },
+            error: function(xhr, textStatus) {
+
+                if (xhr && xhr.responseJSON.message) {
+                    sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
+                } else {
+                    sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
                 }
-            });
-		});
-		
-    </script>  
-  
-    <script type="text/javascript">
-        $(".row_position").sortable({
-            delay: 150,
-            stop: function() {
-                var selectedData = new Array();
-                $(".row_position>tr").each(function() {
-                    selectedData.push($(this).attr("id"));
-                });
-                updateOrder(selectedData);
+                $('#preloader').css('display', 'none');
+            },
+            success: function(data) {
+                $('#preloader').css('display', 'none');
+                sweetAlertMsg('success', data.message);
             }
         });
+    });
+</script>
 
-        function updateOrder(aData) {        
-            $.ajax({
-                url: "{{ route('admin.course.change-order') }}",
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                type: 'POST',
-                data: {
-                    allData: aData
-                },
-                success: function() {
-                    swal("Success!", "Your change successfully saved", "success");
-                }
+<script type="text/javascript">
+    $(".row_position").sortable({
+        delay: 150,
+        stop: function() {
+            var selectedData = new Array();
+            $(".row_position>tr").each(function() {
+                selectedData.push($(this).attr("id"));
             });
+            updateOrder(selectedData);
         }
+    });
 
-        $('.-live').change(function() {
+    function updateOrder(aData) {
+        $.ajax({
+            url: "{{ route('admin.course.change-order') }}",
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            type: 'POST',
+            data: {
+                allData: aData
+            },
+            success: function() {
+                swal("Success!", "Your change successfully saved", "success");
+            }
+        });
+    }
 
-var is_live = $(this).prop('checked') == true ? '1' : '0';
-var id = $(this).data('id');
-$.ajax({
+    $('.-live').change(function() {
+
+        var is_live = $(this).prop('checked') == true ? '1' : '0';
+        var id = $(this).data('id');
+        $.ajax({
             type: "POST",
             dataType: "json",
             url: "{{ route('admin.course.changelive') }}",
@@ -245,6 +243,6 @@ $.ajax({
             }
         });
     });
-    </script>
-    
+</script>
+
 @endpush

@@ -77,14 +77,14 @@ class CourseController extends Controller
 
 			return response(array('message' => 'Data not found.'), 403);
 		}
-		
-		$result=[];
+
+		$result = [];
 		$courses = CourseMaster::where('status', '1')->where('deleted_at', NULL)->orderBy('sort_order', 'ASC')->get();
-		return view('admin.course.add',compact('result', 'courses'));
-    }
+		return view('admin.course.add', compact('result', 'courses'));
+	}
 	public function map(Request $request)
 	{
-		
+
 		if ($request->isMethod('post')) {
 			$rules['course_master_id'] = 'required';
 			$rules['course_id'] = 'required';
@@ -129,33 +129,37 @@ class CourseController extends Controller
 
 			return response(array('message' => 'Data not found.'), 403);
 		}
-		
-			
-		$result=[];
+
+
+		$result = [];
 		$courses = Course::where('status', '1')->where('deleted_at', NULL)->orderBy('sort_order', 'ASC')->get();
 		$coursesMaster = CourseMaster::where('status', '1')->where('deleted_at', NULL)->orderBy('sort_order', 'ASC')->get();
-		return view('admin.course.map',compact('result', 'courses','coursesMaster'));
-    }
+		return view('admin.course.map', compact('result', 'courses', 'coursesMaster'));
+	}
 	public function subjectList()
 	{
-		$result = Course::with('CourseMaster')->orderBy('id', 'DESC')->get();
+		//	$result = Course::with('CourseMaster')->orderBy('id', 'DESC')->get();
+		$result = Course::with('CourseMaster')
+			->orderBy('sort_order', 'ASC') // or 'DESC' based on your sorting preference
+			->get();
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['4']) ? $permission['4'] : null;
-		
-		return view('admin.course.list', compact('result','permission'));
+
+		return view('admin.course.list', compact('result', 'permission'));
 	}
 	public function mapList()
 	{
 		$result = CourseMapMaster::with(['course:id,name', 'courseMaster:id,name'])
-        ->orderBy('id', 'DESC')
-        ->get();
+			->orderBy('id', 'DESC')
+			->get();
 
 		return view('admin.course.map_list', compact('result'));
 	}
-	
-	public function viewSubject(Request $request,$id){		
-		$result=Chapter::where('course_id',$id)->get();	
-		return view('admin.course.chapters',compact('result'));
+
+	public function viewSubject(Request $request, $id)
+	{
+		$result = Chapter::where('course_id', $id)->get();
+		return view('admin.course.chapters', compact('result'));
 	}
 
 	public function changeStatus(Request $request)
@@ -173,7 +177,7 @@ class CourseController extends Controller
 		$courses = CourseMaster::where('status', '1')->where('deleted_at', NULL)->orderBy('sort_order', 'ASC')->get();
 		if ($result) {
 
-			return view('admin.course.add', compact('result','courses'));
+			return view('admin.course.add', compact('result', 'courses'));
 		} else {
 
 			return redirect()->back()->with('5fernsadminerror', 'Something went wrong. Please try again.');
@@ -213,9 +217,8 @@ class CourseController extends Controller
 	public function changeLive(Request $request)
 	{
 		DB::table('courses')
-        ->where('id', $request->post('id'))
-        ->update(['is_live' => $request->post('is_live')]);
+			->where('id', $request->post('id'))
+			->update(['is_live' => $request->post('is_live')]);
 		return response(['message' => 'Subject Live changed successfully.'], 200);
-		
 	}
 }

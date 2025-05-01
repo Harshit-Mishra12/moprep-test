@@ -87,7 +87,7 @@
 													@foreach($result as $key=>$value)
 														<tr class="gradeX odd"  id="{{ $value->id }}">
 															<td class="center">{{ $key+1}}</td>
-														
+
 															<td class="center">{{ \App\Helpers\commonHelper::getChapterName($value->batch_id)}}</td>
 															<td class="center">{{ $value->topic}}</td>
 
@@ -100,7 +100,7 @@
                                                                 </div>
                                                             </td>
                                                             <td class="center">
-                                                            
+
                                                                 <a href="{{ url('admin/question_bank/question/view/'.$value['course_id'] .'/revisionexam')}}" title="View Questions" target="_blank" class="btn btn-tbl-edit" style="line-height:0px;">
                                                                     <i class="fa fa-eye me-0"></i>
                                                                 </a>
@@ -144,160 +144,186 @@
 @endsection
 
 @push('custom_js')
-    <script>
+<script>
+    $(function() {
+        var table = $('.yajra-datatable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('admin.topic-materials.topicMaterialListData') }}",
+                data: function(d) {
+                    d.name = $('#name-filter').val();
+                }
+            },
+            fnDrawCallback: function() {
+                Status();
+                Live();
+                Lock();
+            },
 
-        $(function () {
-            var table = $('.yajra-datatable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: "{{ route('admin.topic-materials.topicMaterialListData') }}",
-                    data: function (d) {
-                        d.name = $('#name-filter').val();
-                    }
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    className: 'center'
                 },
-                fnDrawCallback: function () {
-                    Status();
-                    Live();
-                    Lock();
+                //   {data: 'coursemaster', name: 'coursemaster', className: 'center'},
+                {
+                    data: 'subject',
+                    name: 'subject',
+                    className: 'center'
+                },
+                {
+                    data: 'chapter',
+                    name: 'chapter',
+                    className: 'center'
+                },
+                {
+                    data: 'topic',
+                    name: 'topic',
+                    className: 'center'
+                },
+                {
+                    data: 'status',
+                    name: 'status',
+                    className: 'center'
+                },
+                {
+                    data: 'is_live',
+                    name: 'is_live',
+                    className: 'center'
+                },
+                {
+                    data: 'is_lock',
+                    name: 'is_lock',
+                    className: 'center'
                 },
 
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', className: 'center' },
-                    //   {data: 'coursemaster', name: 'coursemaster', className: 'center'},
-                    { data: 'subject', name: 'subject', className: 'center' },
-                    { data: 'chapter', name: 'chapter', className: 'center' },
-                    { data: 'topic', name: 'topic', className: 'center' },
-                    { data: 'status', name: 'status', className: 'center' },
-                    { data: 'is_live', name: 'is_live', className: 'center' },
-                    { data: 'is_lock', name: 'is_lock', className: 'center' },
+                {
+                    data: 'action',
+                    name: 'action',
+                    className: 'center',
+                    orderable: true,
+                    searchable: true
+                },
+            ]
 
-                    {
-                        data: 'action',
-                        name: 'action',
-                        className: 'center',
-                        orderable: true,
-                        searchable: true
-                    },
-                ]
-
-
-            });
 
         });
 
-        function Status() {
+    });
 
-            $('.-change').change(function () {
+    function Status() {
 
-                var status = $(this).prop('checked') == true ? '1' : '0';
-                var id = $(this).data('id');
+        $('.-change').change(function() {
 
-                $.ajax({
-                    type: "POST",
-                    dataType: "json",
-                    url: "{{ route('admin.topic-materials.changestatus') }}",
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    data: {
-                        'status': status,
-                        'id': id
-                    },
-                    beforeSend: function () {
-                        $('#preloader').css('display', 'block');
-                    },
-                    error: function (xhr, textStatus) {
+            var status = $(this).prop('checked') == true ? '1' : '0';
+            var id = $(this).data('id');
 
-                        if (xhr && xhr.responseJSON.message) {
-                            sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
-                        } else {
-                            sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
-                        }
-                        $('#preloader').css('display', 'none');
-                    },
-                    success: function (data) {
-                        $('#preloader').css('display', 'none');
-                        sweetAlertMsg('success', data.message);
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.topic-materials.changestatus') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'status': status,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                error: function(xhr, textStatus) {
+
+                    if (xhr && xhr.responseJSON.message) {
+                        sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
+                    } else {
+                        sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
                     }
-                });
+                    $('#preloader').css('display', 'none');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                }
             });
-        }
-        function Live() {
-            $('.-live').change(function () {
+        });
+    }
 
-                var is_live = $(this).prop('checked') == true ? '1' : '0';
-                var id = $(this).data('id');
+    function Live() {
+        $('.-live').change(function() {
 
-                $.ajax({
-                    type: "POST",
-                    dataType: "json",
-                    url: "{{ route('admin.topic-materials.changelive') }}",
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    data: {
-                        'is_live': is_live,
-                        'id': id
-                    },
-                    beforeSend: function () {
-                        $('#preloader').css('display', 'block');
-                    },
-                    error: function (xhr, textStatus) {
+            var is_live = $(this).prop('checked') == true ? '1' : '0';
+            var id = $(this).data('id');
 
-                        if (xhr && xhr.responseJSON.message) {
-                            sweetAlertMsg('error', xhr.is_live + ': ' + xhr.responseJSON.message);
-                        } else {
-                            sweetAlertMsg('error', xhr.is_live + ': ' + xhr.statusText);
-                        }
-                        $('#preloader').css('display', 'none');
-                    },
-                    success: function (data) {
-                        $('#preloader').css('display', 'none');
-                        sweetAlertMsg('success', data.message);
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.topic-materials.changelive') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'is_live': is_live,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                error: function(xhr, textStatus) {
+
+                    if (xhr && xhr.responseJSON.message) {
+                        sweetAlertMsg('error', xhr.is_live + ': ' + xhr.responseJSON.message);
+                    } else {
+                        sweetAlertMsg('error', xhr.is_live + ': ' + xhr.statusText);
                     }
-                });
+                    $('#preloader').css('display', 'none');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                }
             });
-        }
+        });
+    }
 
 
-        function Lock() {
-            $('.-lock').change(function () {
+    function Lock() {
+        $('.-lock').change(function() {
 
-                var is_lock = $(this).prop('checked') == true ? '1' : '0';
-                var id = $(this).data('id');
+            var is_lock = $(this).prop('checked') == true ? '1' : '0';
+            var id = $(this).data('id');
 
-                $.ajax({
-                    type: "POST",
-                    dataType: "json",
-                    url: "{{ route('admin.topic-materials.changelock') }}",
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    data: {
-                        'is_lock': is_lock,
-                        'id': id
-                    },
-                    beforeSend: function () {
-                        $('#preloader').css('display', 'block');
-                    },
-                    error: function (xhr, textStatus) {
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.topic-materials.changelock') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'is_lock': is_lock,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                error: function(xhr, textStatus) {
 
-                        if (xhr && xhr.responseJSON.message) {
-                            sweetAlertMsg('error', xhr.is_lock + ': ' + xhr.responseJSON.message);
-                        } else {
-                            sweetAlertMsg('error', xhr.is_lock + ': ' + xhr.statusText);
-                        }
-                        $('#preloader').css('display', 'none');
-                    },
-                    success: function (data) {
-                        $('#preloader').css('display', 'none');
-                        sweetAlertMsg('success', data.message);
+                    if (xhr && xhr.responseJSON.message) {
+                        sweetAlertMsg('error', xhr.is_lock + ': ' + xhr.responseJSON.message);
+                    } else {
+                        sweetAlertMsg('error', xhr.is_lock + ': ' + xhr.statusText);
                     }
-                });
+                    $('#preloader').css('display', 'none');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                }
             });
-        }
-
-    </script>
+        });
+    }
+</script>
 
 @endpush

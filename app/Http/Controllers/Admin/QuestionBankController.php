@@ -26,8 +26,8 @@ class QuestionBankController extends Controller
 		if ($request->isMethod('post')) {
 			$rules = [
 				'id' => 'numeric|required',
-			//	'course_master_id' => 'numeric|required',
-				'name' => 'required|unique:chapters,name,' . $request->post('id') ,
+				//	'course_master_id' => 'numeric|required',
+				'name' => 'required|unique:chapters,name,' . $request->post('id'),
 			];
 			$validator = Validator::make($request->all(), $rules);
 
@@ -492,22 +492,22 @@ class QuestionBankController extends Controller
 		}
 
 		$result = [];
-		$courses = CourseMaster::orderBy('id', 'DESC')->where('status',1)->get();
-		return view('admin.question_bank.bulkquestion.questionAdd', compact('result','courses'));
+		$courses = CourseMaster::orderBy('id', 'DESC')->where('status', 1)->get();
+		return view('admin.question_bank.bulkquestion.questionAdd', compact('result', 'courses'));
 	}
 
 	public function questionYearList()
 	{
-		//$result = DB::table('bulk_question_years')->where('status','1')->orderBy('id','DESC')->get();	
+		//$result = DB::table('bulk_question_years')->where('status','1')->orderBy('id','DESC')->get();
 		// $result = DB::table('bulk_question_years')
 		// ->select('bulk_question_years.*', DB::raw('(SELECT COUNT(*) FROM bulk_questions WHERE bulk_questions.year_id = bulk_question_years.id) as question_count'))
 		// ->where('bulk_question_years.status', '1')
 		// ->orderBy('bulk_question_years.id', 'DESC')
-		// ->get();	
+		// ->get();
 		$course = CourseMaster::orderBy('id', 'DESC')->get();
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['50']) ? $permission['50'] : null;
-		return view('admin.question_bank.bulkquestion.yearlist', compact('course','permission'));
+		return view('admin.question_bank.bulkquestion.yearlist', compact('course', 'permission'));
 	}
 
 	public function questionYearListData(Request $request)
@@ -539,7 +539,7 @@ class QuestionBankController extends Controller
 			return Datatables::of($result)
 
 				->addIndexColumn()
-				->addColumn('total_question', function ($row)  {
+				->addColumn('total_question', function ($row) {
 
 					return $row->question_count;
 				})
@@ -554,7 +554,7 @@ class QuestionBankController extends Controller
 				</td>';
 					return $is_live;
 				})
-->addColumn('is_lock', function ($row) {
+				->addColumn('is_lock', function ($row) {
 					$is_lock = '<td class="center">
 				<div class="switch mt-3">
 				<label>
@@ -574,19 +574,19 @@ class QuestionBankController extends Controller
 					$viewUrl = url('admin/questionBank/questionBulkList/' . $row->id);
 					$editUrl = url('admin/questionBank/yearPartUpdate/' . $row->id);
 					$deleteUrl = url('admin/questionBank/deleteYearQuestion/' . $row->id);
-					
+
 					$viewBtn = '<a href="' . $viewUrl . '" title="View Questions" class="btn btn-tbl-edit btn_change"><i class="fa fa-eye"></i></a>';
-					if(isset($permission) && $permission['edit'] == 'true'){
+					if (isset($permission) && $permission['edit'] == 'true') {
 						$editBtn = '<a href="' . $editUrl . '" title="Edit Year" class="btn btn-tbl-edit btn_change"><i class="fas fa-pencil-alt"></i></a>';
 					}
-					
-					if(isset($permission) && $permission['delete'] == 'true'){
+
+					if (isset($permission) && $permission['delete'] == 'true') {
 						$deleteBtn = '<a href="' . $deleteUrl . '" title="Delete Year and Its Questions" onclick="return confirm(\'Are you sure? You want to delete this Year and all its Questions.\')" class="btn btn-tbl-delete btn_change"><i class="fas fa-trash"></i></a>';
 					}
 
 					return $viewBtn . ' ' . $editBtn . ' ' . $deleteBtn;
 				})
-				->rawColumns(['action','is_live','is_lock'])
+				->rawColumns(['action', 'is_live', 'is_lock'])
 				->make(true);
 		} else {
 
@@ -613,7 +613,7 @@ class QuestionBankController extends Controller
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['34']) ? $permission['34'] : null;
 
-		return view('admin.question_bank.question.list',compact('permission','courses','subjects'));
+		return view('admin.question_bank.question.list', compact('permission', 'courses', 'subjects'));
 	}
 
 	public function questionListData(Request $request)
@@ -622,24 +622,24 @@ class QuestionBankController extends Controller
 			$query = Course::join('course_map_masters', 'courses.id', '=', 'course_map_masters.course_id')
 				->select('courses.*', 'course_map_masters.course_master_id')
 				->selectRaw("
-					(SELECT COUNT(*) FROM questions 
-					 WHERE (questions.course_id = courses.id 
-					 AND questions.course_master_id = course_map_masters.course_master_id) 
+					(SELECT COUNT(*) FROM questions
+					 WHERE (questions.course_id = courses.id
+					 AND questions.course_master_id = course_map_masters.course_master_id)
 					) as otherexam_count
 				")
 				->where('courses.is_live', 1);
-	
+
 			// Apply filters
 			if ($request->filled('course_master_id')) {
 				$query->where('course_map_masters.course_master_id', $request->course_master_id);
 			}
-	
+
 			if ($request->filled('course_id') && $request->course_id != 0) {
 				$query->where('courses.id', $request->course_id);
 			}
-	
+
 			$result = $query->orderBy('courses.id', 'DESC')->get();
-	
+
 			return Datatables::of($result)
 				->addIndexColumn()
 				->addColumn('coursemaster', function ($row) {
@@ -656,7 +656,7 @@ class QuestionBankController extends Controller
 					</td>';
 				})
 				->addColumn('action', function ($row) {
-					$viewUrl = url('admin/question_bank/question/view/' . $row->id . '/revisionexam/'.$row->course_master_id);
+					$viewUrl = url('admin/question_bank/question/view/' . $row->id . '/revisionexam/' . $row->course_master_id);
 					return '<a href="' . $viewUrl . '" title="View Questions" target="_blank" class="btn btn-success btn_change d-inline-flex justify-content-center align-items-center">
 								<i class="fa fa-eye" style="margin: 1px; font-size:14px;"> View Questions</i>
 							</a>';
@@ -667,18 +667,76 @@ class QuestionBankController extends Controller
 			return view('admin.question_bank.question.list');
 		}
 	}
-	
-	
+
+
 
 	public function chapterList()
 	{
-		$result = Chapter::with('course_details','course_master_details')->orderBy('id', 'DESC')->get();
+
+		// $result = Chapter::with('course_details', 'course_master_details')
+		// 	->orderByRaw('ISNULL(sort_order), sort_order ASC') // NULLs last
+		// 	->get();
+
+		$result = Chapter::with('course_details', 'course_master_details')
+			->orderByRaw('CAST(sort_order AS UNSIGNED) ASC')  // Force numeric sorting
+			->get();
+
 		$permission = session('permission') ?? [];
-				// @dd($permission);
+		// @dd($permission);
 		$permission = isset($permission['35']) ? $permission['35'] : null;
 
-		return view('admin.question_bank.chapter.list', compact('result','permission'));
+		return view('admin.question_bank.chapter.list', compact('result', 'permission'));
 	}
+
+
+	public function changeOrder(Request $request)
+	{
+		$allData = $request->allData;
+		//dd($allData);
+		try {
+			$request->validate(['allData' => 'required|array']);
+
+			foreach ($request->allData as $order => $id) {
+				DB::table('chapters')
+					->where('id', $id)
+					->update(['sort_order' => $order + 1]);
+			}
+			$result = DB::table('chapters')
+				->whereIn('id', $allData)
+				->select('id', 'sort_order')
+				->orderBy('sort_order')
+				->get();
+
+			return response()->json([
+				'success' => true,
+				'data' => $result
+			]);
+
+			// $permission = session('permission') ?? [];
+			// return view('admin.question_bank.chapter.list', compact('result', 'permission'));
+
+			//return response()->json(['success' => true]);
+		} catch (\Exception $e) {
+			return response()->json(['error' => $e->getMessage()], 500);
+		}
+	}
+
+	// public function changeOrder(Request $request)
+	// {
+
+	// 	$allData = $request->allData;
+	// 	// dd($allData);
+	// 	$i = 1;
+
+	// 	foreach ($allData as $key => $value) {
+	// 		Chapter::where('id', $value)->update(['sort_order' => $i]);
+	// 		$i++;
+	// 	}
+
+	// 	//return response()->json(['status' => 'success', 'message' => 'Chapter order updated successfully.']);
+	// }
+
+
 
 	public function viewTopics(Request $request, $id)
 	{
@@ -755,14 +813,14 @@ class QuestionBankController extends Controller
 							'is_live' => $question_is_live[$question_id],
 
 						];
-                        // dd($data);
+						// dd($data);
 						$checkData = [
 							'course_master_id' => $course_master_id,
 							'question_id' => $question_id,
 						];
 
 						$check = DB::table('questions')->where($checkData)->count();
-// dd($check);
+						// dd($check);
 						if ($check == 0) {
 							DB::table('questions')->insert($data);
 						}
@@ -795,7 +853,7 @@ class QuestionBankController extends Controller
 		$topic_id = $request->get('topic_id');
 
 		$result = DB::table('bulk_questions')->where('year_id', $id)->get();
-		$html = View::make('admin.question_bank.question.loadQuestion', compact('result', 'subject_id', 'chapter_id', 'topic_id','course_master_id'))->render();
+		$html = View::make('admin.question_bank.question.loadQuestion', compact('result', 'subject_id', 'chapter_id', 'topic_id', 'course_master_id'))->render();
 
 		// Return JSON response with the HTML
 		return response()->json(['html' => $html]);
@@ -809,8 +867,8 @@ class QuestionBankController extends Controller
 		$permission = isset($permission['50']) ? $permission['50'] : null;
 		$result = DB::table('bulk_questions')->where('status', '1')->where('year_id', $id)->get();
 		$yearName = DB::table('bulk_question_years')->where('id', $id)->first();
-	
-		return view('admin.question_bank.bulkquestion.viewQuestion', compact('result', 'yearName','permission'));
+
+		return view('admin.question_bank.bulkquestion.viewQuestion', compact('result', 'yearName', 'permission'));
 	}
 
 	public function deleteBulkQuestion(Request $request, $id)
@@ -898,15 +956,15 @@ class QuestionBankController extends Controller
 		return view('admin.question_bank.question.add', compact('result', 'courses', 'subjects'));
 	}
 
-	public function viewQuestion(Request $request, $course_id, $type,$course_master_id)
+	public function viewQuestion(Request $request, $course_id, $type, $course_master_id)
 	{
 
 		// $result = Question::with('chapter_data')->where('course_id',$course_id)->get();
 
 		$courseName = \App\Models\Course::where('id', $course_id)->first();
-		$topics=TopicMaterials::where('course_id',$course_id)->get();
+		$topics = TopicMaterials::where('course_id', $course_id)->get();
 
-		return view('admin.question_bank.question.view', compact('course_id', 'type', 'courseName','course_master_id','topics'));
+		return view('admin.question_bank.question.view', compact('course_id', 'type', 'courseName', 'course_master_id', 'topics'));
 	}
 
 	public function viewCourseQuestions(Request $request)
@@ -914,7 +972,7 @@ class QuestionBankController extends Controller
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['38']) ? $permission['38'] : null;
 		if ($request->ajax()) {
-		
+
 			$course_id = $_GET['course_id'];
 			$course_master_id = $_GET['course_master_id'];
 			$topic_id = $request->input('topic'); // Get topic filter value
@@ -927,7 +985,7 @@ class QuestionBankController extends Controller
 				$query->where('topic_id', $topic_id); // Apply topic filter
 			}
 
-        $result = $query->get();
+			$result = $query->get();
 			return Datatables::of($result)
 				->addIndexColumn()
 				->addColumn('year_part', function ($row) {
@@ -971,17 +1029,17 @@ class QuestionBankController extends Controller
 
 					$editUrl = url('admin/questionBank/updateBulkQuestion/' . $row->question_id);
 					$deleteUrl = url('admin/question_bank/question/delete/' . $row->id);
-						$editBtn = '';
+					$editBtn = '';
 					$deleteBtn = '';
-            	if(isset($permission) && $permission['edit'] == 'true'){
-					$editBtn = '<a href="' . $editUrl . '" title="Edit Question" class="btn btn-tbl-edit btn_change"><i class="fas fa-pencil-alt"></i></a>';
-            	}
-            	if(isset($permission) && $permission['delete'] == 'true'){
-					$deleteBtn = '<a href="' . $deleteUrl . '" title="Delete Question" onclick="return confirm(\'Are you sure? You want to delete this Question.\')" class="btn btn-tbl-delete btn_change"><i class="fas fa-trash"></i></a>';
-            	}
+					if (isset($permission) && $permission['edit'] == 'true') {
+						$editBtn = '<a href="' . $editUrl . '" title="Edit Question" class="btn btn-tbl-edit btn_change"><i class="fas fa-pencil-alt"></i></a>';
+					}
+					if (isset($permission) && $permission['delete'] == 'true') {
+						$deleteBtn = '<a href="' . $deleteUrl . '" title="Delete Question" onclick="return confirm(\'Are you sure? You want to delete this Question.\')" class="btn btn-tbl-delete btn_change"><i class="fas fa-trash"></i></a>';
+					}
 					return $editBtn . ' ' . $deleteBtn;
 				})
-				->rawColumns(['question', 'action','is_live'])
+				->rawColumns(['question', 'action', 'is_live'])
 				->make(true);
 		} else {
 			return view('admin.mockup_question.list');
@@ -1040,7 +1098,7 @@ class QuestionBankController extends Controller
 		$request->validate([
 			'course_master_id' => 'required|integer'
 		]);
-	
+
 		// Fetch subjects (courses) linked to the given course_master_id via course_map_masters
 		$subjectData = DB::table('course_map_masters')
 			->join('courses', 'course_map_masters.course_id', '=', 'courses.id') // Join to get subject details
@@ -1048,7 +1106,7 @@ class QuestionBankController extends Controller
 			->where('courses.status', '1') // Ensure active subjects
 			->orderBy('courses.id', 'DESC') // Order by subject ID
 			->get(['courses.id', 'courses.name']); // Fetch only required columns
-	
+
 		// Check if subjects exist
 		if ($subjectData->isNotEmpty()) {
 			return response()->json([
@@ -1064,19 +1122,17 @@ class QuestionBankController extends Controller
 	public function changeLivePreYearList(Request $request)
 	{
 		DB::table('bulk_question_years')
-        ->where('id', $request->post('id'))
-        ->update(['is_live' => $request->post('is_live')]);
+			->where('id', $request->post('id'))
+			->update(['is_live' => $request->post('is_live')]);
 		return response(['message' => 'Question Year List Live changed successfully.'], 200);
-		
 	}
 
 	public function changeLiveChapterList(Request $request)
 	{
 		DB::table('chapters')
-        ->where('id', $request->post('id'))
-        ->update(['is_live' => $request->post('is_live')]);
+			->where('id', $request->post('id'))
+			->update(['is_live' => $request->post('is_live')]);
 		return response(['message' => 'Chapters Live changed successfully.'], 200);
-		
 	}
 
 	public function changeLive(Request $request)
@@ -1084,28 +1140,25 @@ class QuestionBankController extends Controller
 		// Question::where('id', $request->post('id'))->update(['is_live' => $request->post('is_live')]);
 		// return response(array('message' => 'Question live changed successfully.'), 200);
 		DB::table('questions')
-        ->where('id', $request->post('id'))
-        ->update(['is_live' => $request->post('is_live')]);
+			->where('id', $request->post('id'))
+			->update(['is_live' => $request->post('is_live')]);
 		return response(['message' => 'Question Live changed successfully.'], 200);
-
 	}
 	public function changeLivePrevYear(Request $request)
 	{
 		DB::table('bulk_questions')
-        ->where('id', $request->post('id'))
-        ->update(['is_live' => $request->post('is_live')]);
+			->where('id', $request->post('id'))
+			->update(['is_live' => $request->post('is_live')]);
 		return response(['message' => 'Question Live Pre changed successfully.'], 200);
-
 	}
 	public function changeLockPrevYear(Request $request)
 	{
 		DB::table('bulk_question_years')
-        ->where('id', $request->post('id'))
-        ->update(['is_lock' => $request->post('is_lock')]);
+			->where('id', $request->post('id'))
+			->update(['is_lock' => $request->post('is_lock')]);
 		return response(['message' => 'Previous Year Question lock changed successfully.'], 200);
-
 	}
-		public function bulkUpdateStatus(Request $request)
+	public function bulkUpdateStatus(Request $request)
 	{
 		$request->validate([
 			'ids' => 'required|array',
@@ -1114,7 +1167,7 @@ class QuestionBankController extends Controller
 		DB::table('bulk_question_years')->whereIn('id', $request->ids)->update(['is_live' => $request->status]);
 		return response(['message' => 'Question Lock changed successfully.'], 200);
 	}
-		public function bulkUpdateQuestion(Request $request)
+	public function bulkUpdateQuestion(Request $request)
 	{
 		$request->validate([
 			'ids' => 'required|array',
@@ -1123,8 +1176,8 @@ class QuestionBankController extends Controller
 		DB::table('questions')->whereIn('id', $request->ids)->update(['is_live' => $request->status]);
 		return response(['message' => 'Question Lock changed successfully.'], 200);
 	}
-    
-    	public function bulkUpdatePYQQuestion(Request $request)
+
+	public function bulkUpdatePYQQuestion(Request $request)
 	{
 		$request->validate([
 			'ids' => 'required|array',

@@ -12,7 +12,7 @@ use DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class NotificationController extends Controller
+class NotificationControllerOriginal extends Controller
 {
 	public function add(Request $request)
 	{
@@ -175,84 +175,6 @@ class NotificationController extends Controller
 		return $response['access_token'];
 	}
 
-
-
-	// function sendNotification($accessToken, $title, $messageBody)
-	// {
-	//     $url = 'https://fcm.googleapis.com/v1/projects/moprep-4afca/messages:send';
-
-	//     $registrationTokens = DB::table('users')
-	//         ->whereNotNull('firebase_token')
-	//         ->pluck('firebase_token')
-	//         ->toArray();
-
-	//     $headers = [
-	//         'Authorization' => 'Bearer ' . $accessToken,
-	//         'Content-Type' => 'application/json',
-	//     ];
-
-	//     $client = new Client();
-
-	//     foreach ($registrationTokens as $token) {
-	//         // Safely cast title and body to string
-	//         $title = is_string($title) ? $title : (string) $title;
-	//         $messageBody = is_string($messageBody) ? $messageBody : (string) $messageBody;
-
-	//         // Only include title/body if not empty
-	//         $notificationPayload = [];
-	//         if (!empty($title)) {
-	//             $notificationPayload['title'] = $title;
-	//         }
-	//         if (!empty($messageBody)) {
-	//             $notificationPayload['body'] = $messageBody;
-	//         }
-
-	//         $message = [
-	//             'message' => [
-	//                 'token' => $token,
-	//             ]
-	//         ];
-
-	//         if (!empty($notificationPayload)) {
-	//             $message['message']['notification'] = $notificationPayload;
-	//         }
-
-	//         try {
-	//             Log::info("Sending FCM message to token: $token", $message);
-
-	//             $response = $client->post($url, [
-	//                 'headers' => $headers,
-	//                 'json' => $message,
-	//             ]);
-
-	//             $responseBody = json_decode($response->getBody()->getContents(), true);
-	//             Log::info("Notification sent successfully to: $token", $responseBody);
-
-	//         } catch (\GuzzleHttp\Exception\ClientException $e) {
-	//             $errorBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : '';
-	//             Log::error("Failed token: $token");
-	//             Log::error("FCM error: " . $e->getMessage());
-	//             Log::error("Response: " . $errorBody);
-
-	//             // Try parsing error JSON
-	//             $errorJson = json_decode($errorBody, true);
-	//             $errorMessage = $errorJson['error']['message'] ?? '';
-
-	//             if ($errorMessage === 'Requested entity was not found.') {
-	//                 DB::table('users')->where('firebase_token', $token)->update(['firebase_token' => null]);
-	//                 Log::info("Invalid token removed from DB: $token");
-	//             }
-
-	//         } catch (\Exception $e) {
-	//             Log::error("Unexpected error while sending to token: $token");
-	//             Log::error($e->getMessage());
-	//         }
-	//     }
-
-	//     return true;
-	// }
-
-
 	function sendNotification($accessToken, $title, $body)
 	{
 		$url = 'https://fcm.googleapis.com/v1/projects/moprep-4afca/messages:send';
@@ -300,12 +222,10 @@ class NotificationController extends Controller
 				\Log::error("FCM error: " . $e->getMessage());
 				\Log::error("Response: " . $errorBody);
 
-				//         // Optionally remove the token if it's invalid
-				//       if (strpos($errorBody, 'Requested entity was not found') !== false) {
+				// Optionally remove the token if it's invalid
+				// if (str_contains($errorBody, 'Requested entity was not found')) {
 				//     DB::table('users')->where('firebase_token', $token)->update(['firebase_token' => null]);
-				//     \Log::info("database action! Token removed for: $token");
 				// }
-
 			}
 		}
 

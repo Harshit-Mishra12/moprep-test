@@ -13,7 +13,7 @@
                         <h2><i class="fa fa-th"></i> Go To</h2>
                     </div>
                     <div class="body">
-                         @if(isset($permission) && $permission['write'] == 'true')
+                        @if(isset($permission) && $permission['write'] == 'true')
                         <div class="btn-group top-head-btn">
                             <a class="btn-primary" href="{{ url('admin/question_bank/chapter/add') }}">
                                 <i class="fa fa-plus"></i> Add Chapter
@@ -103,17 +103,17 @@
                                                     <td class="center">
                                                         <a href="{{ url('admin/question_bank/chapter/view/'.$value['id'] )}}" title="View Topics" class="btn btn-tbl-edit">
                                                             <i class="fas fa-eye"></i>
-                                                            </a>
-                                                             @if(isset($permission) && $permission['edit'] == 'true')
-                                                            <a href="{{ url('admin/question_bank/chapter/update/'.$value['id'] )}}" title="Edit Chapter" class="btn btn-tbl-edit">
-                                                                <i class="fas fa-pencil-alt"></i>
-                                                            </a>
-                                                            @endif
-                                                             @if(isset($permission) && $permission['delete'] == 'true')
-                                                            <a title="Delete Product" onclick="return confirm('Are you sure? You want to delete this chapter.')" href="{{ url('admin/question_bank/chapter/delete/'.$value['id'] )}}" class="btn btn-tbl-delete">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
-                                                            @endif
+                                                        </a>
+                                                        @if(isset($permission) && $permission['edit'] == 'true')
+                                                        <a href="{{ url('admin/question_bank/chapter/update/'.$value['id'] )}}" title="Edit Chapter" class="btn btn-tbl-edit">
+                                                            <i class="fas fa-pencil-alt"></i>
+                                                        </a>
+                                                        @endif
+                                                        @if(isset($permission) && $permission['delete'] == 'true')
+                                                        <a title="Delete Product" onclick="return confirm('Are you sure? You want to delete this chapter.')" href="{{ url('admin/question_bank/chapter/delete/'.$value['id'] )}}" class="btn btn-tbl-delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                                 @endforeach
@@ -184,6 +184,91 @@
 </script>
 
 <script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        var table = $('#DataTables_Table_0').DataTable();
+
+        // Function to get all row IDs
+        function getAllRowIds() {
+            return table.rows({
+                search: 'applied'
+            }).nodes().map(function(node) {
+                return node.id;
+            }).toArray();
+        }
+
+        // Log all row IDs on page load
+        var initialRowIds = getAllRowIds();
+        console.log("All row IDs on page load:", initialRowIds);
+        $(".row_position").sortable({
+            delay: 150,
+            stop: function() {
+                // Get the DataTable instance
+                var table = $('#DataTables_Table_0').DataTable();
+
+                // Get ALL row IDs (including non-visible ones)
+                var allRowIds = table.rows({
+                    search: 'applied'
+                }).nodes().map(function(node) {
+                    return node.id;
+                }).toArray();
+
+                // Get the new order of visible rows
+                var visibleOrder = [];
+                $(".row_position>tr").each(function() {
+                    visibleOrder.push($(this).attr("id"));
+                });
+
+                // Get current page info
+                var pageInfo = table.page.info();
+
+                // Update the complete array with the reordered visible rows
+                for (var i = 0; i < visibleOrder.length; i++) {
+                    allRowIds[pageInfo.start + i] = visibleOrder[i];
+                }
+
+                // Filter out any null/undefined values (just in case)
+                allRowIds = allRowIds.filter(function(id) {
+                    return id !== undefined && id !== null;
+                });
+
+                console.log("All row IDs in new order:", allRowIds);
+                updateOrder(allRowIds);
+            }
+        });
+
+        function updateOrder(aData) {
+            // console.log("updateOrder:", aData)
+            $.ajax({
+                url: "{{ route('admin.chapter.change-order') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                type: 'POST',
+                data: {
+                    allData: aData
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                success: function(response) {
+                    $('#preloader').css('display', 'none');
+                    // swal("Success!", "Order updated successfully for all rows", "success");
+                    // // Optional: redraw the table to reflect any changes
+                    // $('#DataTables_Table_0').DataTable().draw();
+
+                },
+                error: function(xhr, textStatus) {
+                    $('#preloader').css('display', 'none');
+                    if (xhr && xhr.responseJSON.message) {
+                        sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
+                    } else {
+                        sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
+                    }
+                }
+            });
+        }
+    });
     $('.-live').change(function() {
 
         var is_live = $(this).prop('checked') == true ? '1' : '0';

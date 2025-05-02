@@ -147,46 +147,23 @@
 
 @push('custom_js')
 <script>
-    $('.-change').change(function() {
-
-        var status = $(this).prop('checked') == true ? 'Active' : 'De-Active';
-        var id = $(this).data('id');
-
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "{{ route('admin.question_bank.chapter.changestatus') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                'status': status,
-                'id': id
-            },
-            beforeSend: function() {
-                $('#preloader').css('display', 'block');
-            },
-            error: function(xhr, textStatus) {
-
-                if (xhr && xhr.responseJSON.message) {
-                    sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
-                } else {
-                    sweetAlertMsg('error', xhr.status + ': ' + xhr.statusText);
-                }
-                $('#preloader').css('display', 'none');
-            },
-            success: function(data) {
-                $('#preloader').css('display', 'none');
-                sweetAlertMsg('success', data.message);
-            }
-        });
-    });
-</script>
-
-<script>
     $(document).ready(function() {
-        // Initialize DataTable
-        var table = $('#DataTables_Table_0').DataTable();
+        // Initialize DataTable with enhanced configuration
+        if ($.fn.DataTable.isDataTable('#DataTables_Table_0')) {
+            $('#DataTables_Table_0').DataTable().destroy();
+        }
+
+        var table = $('#DataTables_Table_0').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, 500],
+                [10, 25, 50, 100, 500]
+            ], // Added 500 option
+            pageLength: 10, // Default to 10 entries
+            scrollY: '70vh', // Set a fixed height for scrollable area
+            scrollCollapse: true,
+            dom: '<"top"lf>rt<"bottom"ip>', // Layout control
+            stateSave: true // Remember user settings
+        });
 
         // Function to get all row IDs
         function getAllRowIds() {
@@ -197,21 +174,38 @@
             }).toArray();
         }
 
-        // Log all row IDs on page load
-        var initialRowIds = getAllRowIds();
-        console.log("All row IDs on page load:", initialRowIds);
+        // Initialize sortable with enhanced configuration
         $(".row_position").sortable({
+            items: "> tr",
+            cursor: "move",
+            opacity: 0.8,
+            axis: "y",
             delay: 150,
-            stop: function() {
-                // Get the DataTable instance
-                var table = $('#DataTables_Table_0').DataTable();
+            tolerance: "pointer",
+            containment: "parent",
+            helper: function(e, tr) {
+                var $originals = tr.children();
+                var $helper = tr.clone();
+                $helper.children().each(function(index) {
+                    $(this).width($originals.eq(index).width());
+                });
+                return $helper;
+            },
+            start: function(e, ui) {
+                ui.helper.css('background-color', '#f8f9fa');
+                ui.helper.css('box-shadow', '0 0 10px rgba(0,0,0,0.2)');
+                ui.placeholder.css('height', ui.helper.outerHeight() + 'px');
 
-                // Get ALL row IDs (including non-visible ones)
-                var allRowIds = table.rows({
-                    search: 'applied'
-                }).nodes().map(function(node) {
-                    return node.id;
-                }).toArray();
+                // Check if search is active
+                if (table.search().length > 0) {
+                    $(".row_position").sortable("cancel");
+                    swal("Warning!", "Sorting is disabled while searching", "warning");
+                    return false;
+                }
+            },
+            update: function(e, ui) {
+                // Get all row IDs in current order
+                var allRowIds = getAllRowIds();
 
                 // Get the new order of visible rows
                 var visibleOrder = [];
@@ -224,21 +218,52 @@
 
                 // Update the complete array with the reordered visible rows
                 for (var i = 0; i < visibleOrder.length; i++) {
-                    allRowIds[pageInfo.start + i] = visibleOrder[i];
+                    if (pageInfo.start + i < allRowIds.length) {
+                        allRowIds[pageInfo.start + i] = visibleOrder[i];
+                    }
                 }
 
-                // Filter out any null/undefined values (just in case)
-                allRowIds = allRowIds.filter(function(id) {
-                    return id !== undefined && id !== null;
-                });
+                // Filter out any null/undefined values
+                var validIds = allRowIds.filter(id => id);
 
-                console.log("All row IDs in new order:", allRowIds);
-                updateOrder(allRowIds);
+                console.log("Final order to update:", validIds);
+                updateOrder(validIds);
+            }
+        }).disableSelection();
+
+        // Auto-scroll functionality during drag
+        var scrollInterval;
+        var scrollSpeed = 20; // pixels per interval
+        var scrollZoneHeight = 100; // height of top/bottom scroll zones
+
+        $(document).on('mousemove', function(e) {
+            if ($(".row_position").sortable("instance").options.disabled) return;
+
+            var mouseY = e.pageY - $(window).scrollTop();
+            var windowHeight = $(window).height();
+
+            // Clear any existing interval
+            clearInterval(scrollInterval);
+
+            // Check if we need to scroll up or down
+            if (mouseY < scrollZoneHeight) {
+                scrollInterval = setInterval(function() {
+                    window.scrollBy(0, -scrollSpeed);
+                }, 50);
+            } else if (mouseY > windowHeight - scrollZoneHeight) {
+                scrollInterval = setInterval(function() {
+                    window.scrollBy(0, scrollSpeed);
+                }, 50);
             }
         });
 
+        $(document).on('mouseup', function() {
+            clearInterval(scrollInterval);
+        });
+
         function updateOrder(aData) {
-            // console.log("updateOrder:", aData)
+            $('#preloader').css('display', 'block');
+
             $.ajax({
                 url: "{{ route('admin.chapter.change-order') }}",
                 headers: {
@@ -248,17 +273,13 @@
                 data: {
                     allData: aData
                 },
-                beforeSend: function() {
-                    $('#preloader').css('display', 'block');
-                },
                 success: function(response) {
                     $('#preloader').css('display', 'none');
-                    // swal("Success!", "Order updated successfully for all rows", "success");
-                    // // Optional: redraw the table to reflect any changes
-                    // $('#DataTables_Table_0').DataTable().draw();
-
+                    swal("Success!", "Chapter order updated successfully", "success");
+                    // Optionally redraw the table
+                    // table.draw(false);
                 },
-                error: function(xhr, textStatus) {
+                error: function(xhr) {
                     $('#preloader').css('display', 'none');
                     if (xhr && xhr.responseJSON.message) {
                         sweetAlertMsg('error', xhr.status + ': ' + xhr.responseJSON.message);
@@ -268,40 +289,107 @@
                 }
             });
         }
-    });
-    $('.-live').change(function() {
 
-        var is_live = $(this).prop('checked') == true ? '1' : '0';
-        var id = $(this).data('id');
+        // Status change handler
+        $('.-change').change(function() {
+            var status = $(this).prop('checked') ? 'Active' : 'De-Active';
+            var id = $(this).data('id');
 
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "{{ route('admin.question_bank.chapter.changelivechapterlist') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                'is_live': is_live,
-                'id': id
-            },
-            beforeSend: function() {
-                $('#preloader').css('display', 'block');
-            },
-            error: function(xhr, textStatus) {
-
-                if (xhr && xhr.responseJSON.message) {
-                    sweetAlertMsg('error', xhr.is_live + ': ' + xhr.responseJSON.message);
-                } else {
-                    sweetAlertMsg('error', xhr.is_live + ': ' + xhr.statusText);
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.question_bank.chapter.changestatus') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'status': status,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                },
+                error: function(xhr) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('error', xhr.responseJSON?.message || 'Error updating status');
                 }
-                $('#preloader').css('display', 'none');
-            },
-            success: function(data) {
-                $('#preloader').css('display', 'none');
-                sweetAlertMsg('success', data.message);
-            }
+            });
+        });
+
+        // Live status change handler
+        $('.-live').change(function() {
+            var is_live = $(this).prop('checked') ? '1' : '0';
+            var id = $(this).data('id');
+
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.question_bank.chapter.changelivechapterlist') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'is_live': is_live,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                },
+                error: function(xhr) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('error', xhr.responseJSON?.message || 'Error updating live status');
+                }
+            });
         });
     });
 </script>
+
+<style>
+    /* Enhanced sortable styles */
+    .row_position tr {
+        transition: all 0.2s ease;
+        cursor: move;
+    }
+
+    .row_position tr.ui-sortable-helper {
+        background: #f8f9fa !important;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        transform: scale(1.02);
+        z-index: 9999;
+    }
+
+    .row_position tr.ui-sortable-placeholder {
+        background: #e9ecef;
+        visibility: visible !important;
+        height: 60px;
+    }
+
+    /* DataTables scroll container */
+    .dataTables_scrollBody {
+        overflow-y: auto !important;
+        max-height: 70vh !important;
+    }
+
+    /* Preloader style */
+    #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
 @endpush

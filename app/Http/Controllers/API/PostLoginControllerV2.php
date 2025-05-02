@@ -13,6 +13,7 @@ use Hash;
 use Stripe;
 use Carbon\Carbon;
 use App\Models\CourseMaster;
+
 class PostLoginControllerV2 extends Controller
 {
 
@@ -131,13 +132,16 @@ class PostLoginControllerV2 extends Controller
 		}
 	}
 
-
 	public function uncompletedQuestionBank(Request $request)
 	{
 		$user_id = $request->user()->id;
 
 		if ((int) $request->course_master_id <= 0) {
-			return response(array("error" => true, "message" => "No Course found. ", "result" => array()), 400);
+			return response([
+				"error" => true,
+				"message" => "No Course found.",
+				"result" => []
+			], 400);
 		}
 
 		$questions = Course::join('course_map_masters', 'courses.id', '=', 'course_map_masters.course_id')
@@ -156,20 +160,32 @@ class PostLoginControllerV2 extends Controller
 			->where('course_map_masters.course_master_id', $request->course_master_id)
 			->groupBy('courses.id', 'course_map_masters.course_master_id')
 			->having('otherexam_count', '>', 0)
-			->orderBy('courses.id', 'DESC')
+			->orderByRaw('CAST(courses.sort_order AS UNSIGNED) ASC') // Primary sort by sort_order (numeric)
+			->orderBy('courses.id', 'ASC') // Secondary sort by ID
 			->get();
 
-
-		if ($questions->count() == 0) {
-			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+		if ($questions->isEmpty()) {
+			return response([
+				"error" => true,
+				"message" => "No data found.",
+				"result" => []
+			], 400);
 		}
 
 		$result = [];
 
 		foreach ($questions as $question) {
-			$completed_questions = DB::table('question_bank_answers')->where(["user_id" => $user_id, "subject_id" => $question->id, "course_master_id" => $request->course_master_id])->count();
+			$completed_questions = DB::table('question_bank_answers')
+				->where([
+					"user_id" => $user_id,
+					"subject_id" => $question->id,
+					"course_master_id" => $request->course_master_id
+				])
+				->count();
+
+			// Only include courses with incomplete questions
 			if ($question->otherexam_count - $completed_questions > 0) {
-				$data = [
+				$result[] = [
 					"id" => $question->id,
 					"name" => ucfirst($question->name),
 					"description" => ucfirst($question->description),
@@ -178,49 +194,112 @@ class PostLoginControllerV2 extends Controller
 					"completed_questions" => $completed_questions,
 					"left_questions" => $question->otherexam_count - $completed_questions,
 				];
-
-				$result[] = $data;
 			}
 		}
 
-		if (count($result) == 0) {
-			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+		if (empty($result)) {
+			return response([
+				"error" => true,
+				"message" => "No incomplete courses found.",
+				"result" => []
+			], 400);
 		}
 
-		return response(["error" => false, "message" => "Data fetched successfully.", "result" => $result], 200);
+		return response([
+			"error" => false,
+			"message" => "Data fetched successfully.",
+			"result" => $result
+		], 200);
 	}
+	// 	public function uncompletedQuestionBank(Request $request)
+	// 	{
+	// 		$user_id = $request->user()->id;
+
+	// 		if ((int) $request->course_master_id <= 0) {
+	// 			return response(array("error" => true, "message" => "No Course found. ", "result" => array()), 400);
+	// 		}
+
+	// 		$questions = Course::join('course_map_masters', 'courses.id', '=', 'course_map_masters.course_id')
+	// 			->leftJoin('questions', function ($join) {
+	// 				$join->on('courses.id', '=', 'questions.course_id')
+	// 					->whereColumn('course_map_masters.course_master_id', '=', 'questions.course_master_id')
+	// 					->where('questions.is_live', 1); // Only count live questions
+	// 			})
+	// 			->select(
+	// 				'courses.*',
+	// 				'course_map_masters.course_master_id',
+	// 				DB::raw('COUNT(questions.id) as otherexam_count') // Count only live questions
+	// 			)
+	// 			->where('courses.status', '1')
+	// 			->where('courses.is_live', '1')
+	// 			->where('course_map_masters.course_master_id', $request->course_master_id)
+	// 			->groupBy('courses.id', 'course_map_masters.course_master_id')
+	// 			->having('otherexam_count', '>', 0)
+	// 			->orderBy('courses.id', 'DESC')
+	// 			->get();
+
+
+	// 		if ($questions->count() == 0) {
+	// 			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+	// 		}
+
+	// 		$result = [];
+
+	// 		foreach ($questions as $question) {
+	// 			$completed_questions = DB::table('question_bank_answers')->where(["user_id" => $user_id, "subject_id" => $question->id, "course_master_id" => $request->course_master_id])->count();
+	// 			if ($question->otherexam_count - $completed_questions > 0) {
+	// 				$data = [
+	// 					"id" => $question->id,
+	// 					"name" => ucfirst($question->name),
+	// 					"description" => ucfirst($question->description),
+	// 					"image" => asset('uploads/course/' . $question->image),
+	// 					"total_questions" => $question->otherexam_count,
+	// 					"completed_questions" => $completed_questions,
+	// 					"left_questions" => $question->otherexam_count - $completed_questions,
+	// 				];
+
+	// 				$result[] = $data;
+	// 			}
+	// 		}
+
+	// 		if (count($result) == 0) {
+	// 			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+	// 		}
+
+	// 		return response(["error" => false, "message" => "Data fetched successfully.", "result" => $result], 200);
+	// 	}
 
 	public function upcomingMockTests(Request $request)
 	{
-	    $user_id = $request->user()->id;	
+		$user_id = $request->user()->id;
 		$currentDateTime = now()->format('Y-m-d H:i');
 
 		if ((int) $request->course_master_id <= 0) {
 			return response(array("error" => true, "message" => "No Course found. ", "result" => array()), 400);
 		}
-            
-        //   $questions = \App\Models\Mockup::whereRaw("
-        //     STR_TO_DATE(CONCAT(start_date, ' ', start_time), '%Y-%m-%d %H:%i:%s') > ?",
-        //     [$currentDateTime]
-        // )->where('status', 'Active')
-        // ->where('course_master_id', $request->course_master_id)
-        // ->orderBy('id', 'DESC')
-        // ->get();
-        
-        		$questions = \App\Models\Mockup::whereRaw("CONCAT(end_date, ' ', end_time) >= ?", [$currentDateTime])
-					->where('status', 'Active')
-					->where('course_master_id', $request->course_master_id)
-					->whereNotExists(function ($query) use ($user_id) {
-						$query->select(\DB::raw(1))
-							->from('mockup_test_result')
-							->whereRaw('mockup_test_result.mock_id = mockups.id')
-							->where('mockup_test_result.user_id', $user_id);
-					})
-					->orderBy('start_date', 'ASC')
-					->get();
 
-            
-    
+		//   $questions = \App\Models\Mockup::whereRaw("
+		//     STR_TO_DATE(CONCAT(start_date, ' ', start_time), '%Y-%m-%d %H:%i:%s') > ?",
+		//     [$currentDateTime]
+		// )->where('status', 'Active')
+		// ->where('course_master_id', $request->course_master_id)
+		// ->orderBy('id', 'DESC')
+		// ->get();
+
+		$questions = \App\Models\Mockup::whereRaw("CONCAT(end_date, ' ', end_time) >= ?", [$currentDateTime])
+			->where('status', 'Active')
+			->where('course_master_id', $request->course_master_id)
+			->whereNotExists(function ($query) use ($user_id) {
+				$query->select(\DB::raw(1))
+					->from('mockup_test_result')
+					->whereRaw('mockup_test_result.mock_id = mockups.id')
+					->where('mockup_test_result.user_id', $user_id);
+			})
+			->orderBy('start_date', 'ASC')
+			->get();
+
+
+
 
 
 		if ($questions->count() == 0) {
@@ -372,12 +451,13 @@ class PostLoginControllerV2 extends Controller
 		}
 	}
 
-	
-	public function mockTestUpcomming(Request $request){
-		$user_id = $request->user()->id;	
-		$course_master_id = $request->course_master_id ;
+
+	public function mockTestUpcomming(Request $request)
+	{
+		$user_id = $request->user()->id;
+		$course_master_id = $request->course_master_id;
 		$currentDateTime = now()->format('Y-m-d H:i');
-	
+
 
 		$questions = \App\Models\Mockup::whereRaw("CONCAT(end_date, ' ', end_time) >= ?", [$currentDateTime])
 			->where('status', 'Active')
@@ -497,7 +577,7 @@ class PostLoginControllerV2 extends Controller
 		$result = [];
 		$i = 1;
 		$z = 1;
-		if(!empty($yearData)){
+		if (!empty($yearData)) {
 			foreach ($yearData as $year) {
 
 				$partData = DB::table('bulk_question_years')->where('status', '1')->where('is_live', 1)->where('course_master_id', $course_master_id)->where('year', $year->year)->get();
@@ -509,42 +589,39 @@ class PostLoginControllerV2 extends Controller
 						$attempted_question = DB::table('previous_year_answers')->where('part_id', $part->id)->where('user_id', $user_id)->count();
 
 						$pause_status = "start";
-					if($attempted_question==0){
-						$pause_status = "start";
-					}else if($attempted_question>0 && $attempted_question<$question_count){
-						$pause_status = "resume";
-					}else if($attempted_question==$question_count){
-						$pause_status = "complete";
-					}
-					if($question_count > 0) {
-					    						$yResult = [
-							'part_id' => $part->id,
-							'is_lock' => $part->is_lock,
-							'part_sequence' => sprintf('%02d', $z++),
-							'part_name' => ucfirst($part->part),
-							'questions' => $question_count,
-							'attempted_question' => $attempted_question,
-							'unattempted_question' => $question_count - $attempted_question,
-							'pause_status' => $pause_status
-						];
+						if ($attempted_question == 0) {
+							$pause_status = "start";
+						} else if ($attempted_question > 0 && $attempted_question < $question_count) {
+							$pause_status = "resume";
+						} else if ($attempted_question == $question_count) {
+							$pause_status = "complete";
+						}
+						if ($question_count > 0) {
+							$yResult = [
+								'part_id' => $part->id,
+								'is_lock' => $part->is_lock,
+								'part_sequence' => sprintf('%02d', $z++),
+								'part_name' => ucfirst($part->part),
+								'questions' => $question_count,
+								'attempted_question' => $attempted_question,
+								'unattempted_question' => $question_count - $attempted_question,
+								'pause_status' => $pause_status
+							];
 
-						$yearResult[] = $yResult;
+							$yearResult[] = $yResult;
+						}
 					}
-
-					}					
 				}
-				if(!empty($yearResult)) {
-				    				$data = [
-					"year_id" => $year->id,
-					"year_name" => sprintf('%02d', $i) . ' - ' . ucfirst($year->year),
-					"year_data" => $yearResult
-				];
+				if (!empty($yearResult)) {
+					$data = [
+						"year_id" => $year->id,
+						"year_name" => sprintf('%02d', $i) . ' - ' . ucfirst($year->year),
+						"year_data" => $yearResult
+					];
 
-			    	$result[]=$data; 
+					$result[] = $data;
 					$i++;
 				}
-
-			
 			}
 		}
 
@@ -583,7 +660,6 @@ class PostLoginControllerV2 extends Controller
 				];
 
 				$topicResult[] = $tResult;
-
 			}
 		}
 
@@ -720,18 +796,14 @@ class PostLoginControllerV2 extends Controller
 
 					return response()->json(['error' => true, 'data' => $response, 'trial_period' => 0]);
 				}
-
-
 			} else {
 
 				return response()->json(['error' => true, 'data' => 'User not found', 'trial_period' => 0]);
 			}
-
 		} catch (\Exception $e) {
 
 			return response()->json(['error' => true, 'data' => $e->getMessage(), 'trial_period' => 0]);
 		}
-
 	}
 
 
@@ -762,8 +834,6 @@ class PostLoginControllerV2 extends Controller
 		} else {
 			return response(["error" => false, "subscription_status" => 0, "subscribed_courses" => $data, "message" => "Subscription is not active."], 200);
 		}
-
-
 	}
 
 
@@ -778,10 +848,10 @@ class PostLoginControllerV2 extends Controller
 		if ($request->type == 'attempted') {
 			$bookmarked = DB::table('mockup_test_result')
 				->where('user_id', $user_id)
-				->join('mockups', function ($join) use ($currentDateTime,$course_master_id) {
+				->join('mockups', function ($join) use ($currentDateTime, $course_master_id) {
 					$join->on('mockups.id', '=', 'mockup_test_result.mock_id')
-				// 		->whereRaw("CONCAT(mockups.end_date, ' ', mockups.end_time, ':00') < ?", [$currentDateTime])
-						->where('course_master_id',$course_master_id);
+						// 		->whereRaw("CONCAT(mockups.end_date, ' ', mockups.end_time, ':00') < ?", [$currentDateTime])
+						->where('course_master_id', $course_master_id);
 				})
 				->select('mockups.*')
 				->get();
@@ -792,7 +862,7 @@ class PostLoginControllerV2 extends Controller
 						->where('mockup_test_result.user_id', '=', $user_id);
 				})
 				->whereNull('mockup_test_result.mock_id') // If null, means no entry in test result
-				->where('course_master_id',$course_master_id)
+				->where('course_master_id', $course_master_id)
 				->whereRaw("CONCAT(mockups.end_date, ' ', mockups.end_time, ':00') < ?", [$currentDateTime])
 				->select('mockups.*')
 				->get();
@@ -820,5 +890,4 @@ class PostLoginControllerV2 extends Controller
 
 		return response(["error" => false, "message" => "Data fetched successfully.", "result" => $result], 200);
 	}
-
 }

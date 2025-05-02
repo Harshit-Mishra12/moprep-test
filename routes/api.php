@@ -25,12 +25,12 @@ Route::post('verifyOtp', "API\PreLoginController@verifyOtp");
 Route::get('stateList', "API\PreLoginController@stateList");
 Route::get('mockTestSubmitAutoWithoutLogin', "API\PreLoginController@mockTestSubmitAutoWithoutLogin");
 Route::post('createNewPassword', "API\PreLoginController@createNewPassword");
-Route::get("privacyPolicy","API\PreLoginController@privacyPolicy");
-Route::match(['get','post'],'webhookResponse', 'API\PreLoginController@webhookResponse')->name('webhookResponse');
-Route::get("sendOtpSms","API\PreLoginController@sendOtpSms");
-Route::get("webhookResponseData","API\PreLoginController@webhookResponseData");
-Route::get("getWebhooks","API\PreLoginController@getWebhooks");
-Route::get("removeNotification","API\PreLoginController@removeNotification");
+Route::get("privacyPolicy", "API\PreLoginController@privacyPolicy");
+Route::match(['get', 'post'], 'webhookResponse', 'API\PreLoginController@webhookResponse')->name('webhookResponse');
+Route::get("sendOtpSms", "API\PreLoginController@sendOtpSms");
+Route::get("webhookResponseData", "API\PreLoginController@webhookResponseData");
+Route::get("getWebhooks", "API\PreLoginController@getWebhooks");
+Route::get("removeNotification", "API\PreLoginController@removeNotification");
 
 // old api
 // Route::post('check-exist-user', "API\PreLoginController@checkExistUser");
@@ -38,15 +38,15 @@ Route::get("removeNotification","API\PreLoginController@removeNotification");
 // Route::post('validate-otp', "API\PreLoginController@validateOtp");
 
 Route::group([
-    'middleware' => ['auth:api', 'Userauth']
-  ], function() {
+	'middleware' => ['auth:api', 'Userauth']
+], function () {
 
 	// Home Screen
 	Route::get("bannerList", "API\PostLoginController@bannerList");
 	Route::get("uncompletedQuestionBank", "API\PostLoginController@uncompletedQuestionBank");
 	Route::get("upcomingMockTests", "API\PostLoginController@upcomingMockTests");
 
-	// Question Bank 
+	// Question Bank
 	Route::get("questionBank", "API\PostLoginController@questionBank");
 	Route::post("chapterQuestionBank", "API\PostLoginController@chapterQuestionBank");
 	Route::post("questionBankSearch", "API\PostLoginController@questionBankSearch");
@@ -113,33 +113,33 @@ Route::group([
 	Route::get("bookmarkedSubjectList", "API\PostLoginController@bookmarkedSubjectList");
 	Route::post("bookmarkedSubjectQuestions", "API\PostLoginController@bookmarkedSubjectQuestions");
 	Route::post("bookmarkedSubjectQuestionsDetail", "API\PostLoginController@bookmarkedSubjectQuestionsDetail");
-	
+
 	Route::get("bookmarkedYearList", "API\PostLoginController@bookmarkedYearList");
 	Route::post("bookmarkedYearQuestions", "API\PostLoginController@bookmarkedYearQuestions");
 	Route::post("bookmarkedYearQuestionsDetail", "API\PostLoginController@bookmarkedYearQuestionsDetail");
 
 	Route::get("allBookmarkedQuestions", "API\PostLoginController@allBookmarkedQuestions");
 	Route::get("allBookmarkedQuestionsDetails", "API\PostLoginController@allBookmarkedQuestionsDetails");
-	
+
 	Route::post("deleteBookmarkedQuestions", "API\PostLoginController@deleteBookmarkedQuestions");
 
 	// Subscription
 	Route::post("requestPackageSubscription", "API\PostLoginController@requestPackageSubscription");
 	Route::post("requestPackageSubscriptionRazor", "API\PostLoginController@requestPackageSubscriptionRazor");
 	Route::post("responsePackageSubscriptionRazor", "API\PostLoginController@responsePackageSubscriptionRazor");
-	
+
 	// Extra
 	Route::post("deleteMockTesting", "API\PostLoginController@deleteMockTesting");
 	Route::post("mockTestSubmitAuto", "API\PostLoginController@mockTestSubmitAuto");
 
 	// Delete Account
-	Route::post("deleteAccount","API\PostLoginController@deleteAccount");
+	Route::post("deleteAccount", "API\PostLoginController@deleteAccount");
 
-	Route::get("transactionHistory","API\PostLoginController@transactionHistory");
+	Route::get("transactionHistory", "API\PostLoginController@transactionHistory");
 
-	Route::get("checkUserSubscription","API\PostLoginController@checkUserSubscription");
-	
-	Route::get("logout","API\PostLoginController@logout");
+	Route::get("checkUserSubscription", "API\PostLoginController@checkUserSubscription");
+
+	Route::get("logout", "API\PostLoginController@logout");
 
 
 	// old api
@@ -148,7 +148,7 @@ Route::group([
 	// Route::post('batch-list','API\PostLoginController@batchList');
 	// Route::get('purchased-batch-list','API\PostLoginController@purchasedBatchList');
 	// Route::post('payment-initiated','API\PostLoginController@paymentInitiate');
-	
+
 	// Route::post('topic-batch-list',"API\PostLoginController@topicBatchList");
 	// Route::post('notes-material-list',"API\PostLoginController@notesMaterialsList");
 	// Route::post('chapters-list',"API\PostLoginController@chaptersList");
@@ -162,7 +162,7 @@ Route::group([
 
 	Route::prefix('v2')->group(function () {
 
-	    Route::post("courseMasterList", "API\PostLoginControllerV2@courseMasterList");
+		Route::post("courseMasterList", "API\PostLoginControllerV2@courseMasterList");
 		Route::post("questionBankAnswers", "API\PostLoginControllerV2@questionBankAnswers");
 		Route::get("uncompletedQuestionBank", "API\PostLoginControllerV2@uncompletedQuestionBank");
 		Route::get("upcomingMockTests", "API\PostLoginControllerV2@upcomingMockTests");
@@ -174,7 +174,7 @@ Route::group([
 		Route::get("previousYearTopics", "API\PostLoginControllerV2@previousYearTopics");
 		Route::get("subjectList", "API\PostLoginControllerV2@subjectList");
 		Route::post("requestPackageSubscriptionRazor", "API\PostLoginControllerV2@requestPackageSubscriptionRazor");
-		Route::get("checkUserSubscription","API\PostLoginControllerV2@checkUserSubscription");
-		Route::get("mockTestResultData","API\PostLoginControllerV2@mockTestResultData");
+		Route::get("checkUserSubscription", "API\PostLoginControllerV2@checkUserSubscription");
+		Route::get("mockTestResultData", "API\PostLoginControllerV2@mockTestResultData");
 	});
 });

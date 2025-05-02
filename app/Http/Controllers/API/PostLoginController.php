@@ -160,24 +160,12 @@ class PostLoginController extends Controller
 	// 		return response(["error"=>false,"message" => "Data fetched successfully.", "result" => $result], 200);
 	// 	}
 
-
 	public function questionBank(Request $request)
 	{
 		$user_id = $request->user()->id;
-		//$user_id = 4646;
 
-		// 		if ((int) $request->course_master_id <= 0) {
-		// 		    $course_master_id = 1;
-		// 		}
-		// 		else {
-		// 		    $course_master_id = $request->course_master_id;
-		// 		}
-
-		if ($request->has('course_master_id')) {
-			$course_master_id = $request->course_master_id;
-		} else {
-			$course_master_id = 1;
-		}
+		// Set default course_master_id if not provided
+		$course_master_id = $request->has('course_master_id') ? $request->course_master_id : 1;
 
 		$questions = Course::join('course_map_masters', 'courses.id', '=', 'course_map_masters.course_id')
 			->leftJoin('questions', function ($join) {
@@ -195,20 +183,30 @@ class PostLoginController extends Controller
 			->where('course_map_masters.course_master_id', $course_master_id)
 			->groupBy('courses.id', 'course_map_masters.course_master_id')
 			->having('otherexam_count', '>', 0)
-			->orderBy('courses.id', 'DESC')
+			->orderByRaw('CAST(courses.sort_order AS UNSIGNED) ASC') // Numeric sorting by sort_order
+			->orderBy('courses.id', 'ASC') // Secondary sort
 			->get();
 
-
-		if ($questions->count() == 0) {
-			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+		if ($questions->isEmpty()) {
+			return response([
+				"error" => true,
+				"message" => "No data found.",
+				"result" => []
+			], 400);
 		}
 
 		$result = [];
 
 		foreach ($questions as $question) {
+			$completed_questions = DB::table('question_bank_answers')
+				->where([
+					"user_id" => $user_id,
+					"subject_id" => $question->id,
+					'course_master_id' => $course_master_id
+				])
+				->count();
 
-			$completed_questions  = DB::table('question_bank_answers')->where(["user_id" => $user_id, "subject_id" => $question->id, 'course_master_id' => $course_master_id])->count();
-			$data = [
+			$result[] = [
 				"id" => $question->id,
 				"name" => ucfirst($question->name),
 				"description" => ucfirst($question->description),
@@ -217,14 +215,80 @@ class PostLoginController extends Controller
 				"completed_questions" => $completed_questions,
 				"left_questions" => $question->otherexam_count - $completed_questions,
 			];
-
-			$result[] = $data;
 		}
 
-		return response(["error" => false, "message" => "Data fetched successfully.", "result" => $result], 200);
+		return response([
+			"error" => false,
+			"message" => "Data fetched successfully.",
+			"result" => $result
+		], 200);
 	}
+
+	// 	public function questionBank(Request $request)
+	// 	{
+	// 		$user_id = $request->user()->id;
+	// 		//$user_id = 4646;
+
+	// 		// 		if ((int) $request->course_master_id <= 0) {
+	// 		// 		    $course_master_id = 1;
+	// 		// 		}
+	// 		// 		else {
+	// 		// 		    $course_master_id = $request->course_master_id;
+	// 		// 		}
+
+	// 		if ($request->has('course_master_id')) {
+	// 			$course_master_id = $request->course_master_id;
+	// 		} else {
+	// 			$course_master_id = 1;
+	// 		}
+
+	// 		$questions = Course::join('course_map_masters', 'courses.id', '=', 'course_map_masters.course_id')
+	// 			->leftJoin('questions', function ($join) {
+	// 				$join->on('courses.id', '=', 'questions.course_id')
+	// 					->whereColumn('course_map_masters.course_master_id', '=', 'questions.course_master_id')
+	// 					->where('questions.is_live', 1); // Only count live questions
+	// 			})
+	// 			->select(
+	// 				'courses.*',
+	// 				'course_map_masters.course_master_id',
+	// 				DB::raw('COUNT(questions.id) as otherexam_count') // Count only live questions
+	// 			)
+	// 			->where('courses.status', '1')
+	// 			->where('courses.is_live', '1')
+	// 			->where('course_map_masters.course_master_id', $course_master_id)
+	// 			->groupBy('courses.id', 'course_map_masters.course_master_id')
+	// 			->having('otherexam_count', '>', 0)
+	// 			->orderBy('courses.id', 'DESC')
+	// 			->get();
+
+
+	// 		if ($questions->count() == 0) {
+	// 			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
+	// 		}
+
+	// 		$result = [];
+
+	// 		foreach ($questions as $question) {
+
+	// 			$completed_questions  = DB::table('question_bank_answers')->where(["user_id" => $user_id, "subject_id" => $question->id, 'course_master_id' => $course_master_id])->count();
+	// 			$data = [
+	// 				"id" => $question->id,
+	// 				"name" => ucfirst($question->name),
+	// 				"description" => ucfirst($question->description),
+	// 				"image" => asset('uploads/course/' . $question->image),
+	// 				"total_questions" => $question->otherexam_count,
+	// 				"completed_questions" => $completed_questions,
+	// 				"left_questions" => $question->otherexam_count - $completed_questions,
+	// 			];
+
+	// 			$result[] = $data;
+	// 		}
+
+	// 		return response(["error" => false, "message" => "Data fetched successfully.", "result" => $result], 200);
+	// 	}
 	public function chapterQuestionBank(Request $request)
 	{
+
 		$user_id = $request->user()->id;
 		$subject_id = $request->post('subject_id');
 		$course_master_id = $request->post('course_master_id'); // Nullable
@@ -244,13 +308,15 @@ class PostLoginController extends Controller
 				->where('course_id', $subject_id)
 				->where('status', 'Active')
 				->where('is_live', '1')
-				->orderBy('name', 'ASC')
+				->orderByRaw('CAST(sort_order AS UNSIGNED) ASC') // Sort by sort_order numerically
+				->orderBy('name', 'ASC') // Secondary sort
 				->get();
 		} else {
 			$chapter_data = \App\Models\Chapter::where('course_id', $subject_id)
 				->where('status', 'Active')
 				->where('is_live', '1')
-				->orderBy('name', 'ASC')
+				->orderByRaw('CAST(sort_order AS UNSIGNED) ASC') // Sort by sort_order numerically
+				->orderBy('name', 'ASC') // Secondary sort
 				->get();
 		}
 
@@ -265,7 +331,8 @@ class PostLoginController extends Controller
 					->where('batch_id', $chapter->id)
 					->where('status', '1')
 					->where('is_live', '1')
-					->orderBy('id', 'DESC')
+					->orderByRaw('CAST(sort_order AS UNSIGNED) ASC') // Sort topics by sort_order too
+					->orderBy('id', 'ASC') // Secondary sort
 					->get();
 
 				$topicResult = [];
@@ -342,12 +409,135 @@ class PostLoginController extends Controller
 			"result" => $result
 		], 200);
 	}
+	// 	public function chapterQuestionBank(Request $request)
+	// 	{
+	// 		$user_id = $request->user()->id;
+	// 		$subject_id = $request->post('subject_id');
+	// 		$course_master_id = $request->post('course_master_id'); // Nullable
+
+	// 		$subject_data = \App\Models\Course::where('id', $subject_id)->first();
+
+	// 		// If course_master_id is provided, filter based on it, else fetch all active chapters
+	// 		if (!empty($course_master_id)) {
+	// 			$chapter_data = \App\Models\Chapter::whereIn('id', function ($query) use ($subject_id, $course_master_id) {
+	// 				$query->select('chapter_id')
+	// 					->from('questions')
+	// 					->where('course_id', $subject_id)
+	// 					->where('course_master_id', $course_master_id)
+	// 					->where('is_live', '1')
+	// 					->distinct();
+	// 			})
+	// 				->where('course_id', $subject_id)
+	// 				->where('status', 'Active')
+	// 				->where('is_live', '1')
+	// 				->orderBy('name', 'ASC')
+	// 				->get();
+	// 		} else {
+	// 			$chapter_data = \App\Models\Chapter::where('course_id', $subject_id)
+	// 				->where('status', 'Active')
+	// 				->where('is_live', '1')
+	// 				->orderBy('name', 'ASC')
+	// 				->get();
+	// 		}
+
+	// 		$result = [];
+	// 		$i = 1;
+	// 		$z = 1;
+
+	// 		if (!empty($chapter_data)) {
+	// 			foreach ($chapter_data as $chapter) {
+	// 				// Fetch topics only for the filtered chapters
+	// 				$topic_data = \App\Models\TopicMaterials::where('course_id', $subject_id)
+	// 					->where('batch_id', $chapter->id)
+	// 					->where('status', '1')
+	// 					->where('is_live', '1')
+	// 					->orderBy('id', 'DESC')
+	// 					->get();
+
+	// 				$topicResult = [];
+	// 				if (!empty($topic_data)) {
+	// 					foreach ($topic_data as $topic) {
+	// 						$questionQuery = \App\Models\Question::where('course_id', $subject_id)
+	// 							->where('chapter_id', $chapter->id)
+	// 							->where('topic_id', $topic->id)
+	// 							->where('is_live', '1');
+
+	// 						// Apply course_master_id filter only if provided
+	// 						if (!empty($course_master_id)) {
+	// 							$questionQuery->where('course_master_id', $course_master_id);
+	// 						}
+
+	// 						$question_count = $questionQuery->count();
+
+	// 						// Fetch attempted questions for the user
+	// 						$attemptedQuery = DB::table('question_bank_answers')
+	// 							->where('subject_id', $subject_id)
+	// 							->where('chapter_id', $chapter->id)
+	// 							->where('topic_id', $topic->id)
+	// 							->where('user_id', $user_id);
+
+	// 						if (!empty($course_master_id)) {
+	// 							$attemptedQuery->where('course_master_id', $course_master_id);
+	// 						}
+
+	// 						$attempted_question = $attemptedQuery->count();
+
+	// 						// Determine pause status
+	// 						$pause_status = "start";
+	// 						if ($attempted_question == 0) {
+	// 							$pause_status = "start";
+	// 						} else if ($attempted_question > 0 && $attempted_question < $question_count) {
+	// 							$pause_status = "resume";
+	// 						} else if ($attempted_question == $question_count) {
+	// 							$pause_status = "complete";
+	// 						}
+
+	// 						// Prepare topic result
+	// 						$tResult = [
+	// 							'topic_id' => $topic->id,
+	// 							'topic_sequence' => sprintf('%02d', $z++),
+	// 							'topic_name' => ucfirst($topic->topic),
+	// 							'is_lock' => $topic->is_lock,
+	// 							'questions' => $question_count,
+	// 							'attempted_question' => $attempted_question,
+	// 							'unattempted_question' => $question_count - $attempted_question,
+	// 							'pause_status' => $pause_status
+	// 						];
+
+	// 						$topicResult[] = $tResult;
+	// 					}
+	// 				}
+
+	// 				// Prepare chapter result
+	// 				$data = [
+	// 					"chapter_id" => $chapter->id,
+	// 					"chapter_name" => 'Chapter ' . sprintf('%02d', $i) . ' - ' . ucfirst($chapter->name),
+	// 					"topic_data" => $topicResult
+	// 				];
+
+	// 				$result[] = $data;
+	// 				$i++;
+	// 			}
+	// 		}
+
+	// 		return response([
+	// 			"error" => false,
+	// 			"message" => "Data fetched successfully.",
+	// 			"subject_id" => $subject_data->id,
+	// 			"subject_name" => $subject_data->name,
+	// 			"result" => $result
+	// 		], 200);
+	// 	}
 	public function questionBankSearch(Request $request)
 	{
-		// dd('ss');
 		$title = $request->post('title');
+
+		$course_master_id = $request->post('course_master_id');
+
+		if (!$course_master_id || (int) $course_master_id <= 0) {
+			$course_master_id = 1;
+		}
 		$topic_data = \App\Models\TopicMaterials::where('status', '1')
-			->where('is_live', '1')
 			->where(function ($query) use ($title, $request) {
 				$query->where('topic', 'like', '%' . $title . '%')
 					->orWhereExists(function ($subquery) use ($title) {
@@ -357,9 +547,10 @@ class PostLoginController extends Controller
 							->where('chapters.name', 'like', '%' . $title . '%');
 					});
 			})
-			->whereExists(function ($query) {
+			->whereExists(function ($query) use ($course_master_id) {
 				$query->select(\DB::raw(1))
 					->from('questions')
+					->where('questions.course_master_id', $course_master_id)
 					->whereRaw('questions.topic_id = topic_materials.id');
 			})
 			->orderBy('id', 'DESC');
@@ -373,6 +564,8 @@ class PostLoginController extends Controller
 			return response(array("error" => true, "message" => "No data found. ", "result" => array()), 400);
 		}
 
+
+
 		$topicResult = [];
 		if (!empty($topic_data)) {
 			foreach ($topic_data as $topic) {
@@ -382,14 +575,12 @@ class PostLoginController extends Controller
 				$total_questions = DB::table('questions')->where([
 					'course_id' => $topic->course_id,
 					'chapter_id' => $topic->batch_id,
-					'topic_id' => $topic->id,
-					'questions.is_live' => 1
+					'topic_id' => $topic->id
 				])->count();
 				$tResult = [
 					'subject_id' => $topic->course_id,
 					'chapter_id' => $topic->batch_id,
 					'topic_id' => $topic->id,
-					'is_lock' => $topic->is_lock,
 					'topic_name' => ucfirst($chapterData->name) . ' - ' . ucfirst($topic->topic),
 					'questions' => $total_questions
 				];
@@ -434,6 +625,7 @@ class PostLoginController extends Controller
 
 	public function chapterQuestions(Request $request)
 	{
+
 
 		$user_id = $request->user()->id;
 		$subject_id = $request->post('subject_id');

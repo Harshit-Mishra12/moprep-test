@@ -82,38 +82,8 @@
                                                     </th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <!-- @if(!empty($result))
-													@foreach($result as $key=>$value)
-														<tr class="gradeX odd"  id="{{ $value->id }}">
-															<td class="center">{{ $key+1}}</td>
+                                            <tbody class="row_position">
 
-															<td class="center">{{ \App\Helpers\commonHelper::getChapterName($value->batch_id)}}</td>
-															<td class="center">{{ $value->topic}}</td>
-
-															<td class="center">
-                                                                <div class="switch mt-3">
-                                                                    <label>
-                                                                        <input type="checkbox" class="-change" data-id="{{ $value['id'] }}"@if($value['status']=='1'){{ 'checked' }} @endif>
-                                                                        <span class="lever switch-col-red layout-switch"></span>
-                                                                    </label>
-                                                                </div>
-                                                            </td>
-                                                            <td class="center">
-
-                                                                <a href="{{ url('admin/question_bank/question/view/'.$value['course_id'] .'/revisionexam')}}" title="View Questions" target="_blank" class="btn btn-tbl-edit" style="line-height:0px;">
-                                                                    <i class="fa fa-eye me-0"></i>
-                                                                </a>
-                                                                <a href="{{ url('admin/topic-materials/update/'.$value['id'] )}}" title="Edit Topic Materials" class="btn btn-tbl-edit">
-                                                                    <i class="fas fa-pencil-alt"></i>
-                                                                </a>
-                                                                <a title="Delete Topic Materials" onclick="return confirm('Are you sure? You want to delete this topic materials.')" href="{{ url('admin/topic-materials/delete/'.$value['id'] )}}" class="btn btn-tbl-delete">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </a>
-                                                            </td>
-														</tr>
-													@endforeach
-												@endif -->
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -155,12 +125,27 @@
                     d.name = $('#name-filter').val();
                 }
             },
+            rowId: 'id', // This tells DataTables to use the 'id' property as row ID
+            lengthMenu: [
+                [10, 25, 50, 100, 500],
+                [10, 25, 50, 100, 500]
+            ], // Added 500 option
+            pageLength: 10, // Default to 10 entries
+            scrollY: '60vh', // Set a fixed height for scrollable area
+            scrollCollapse: true,
+            paging: true,
             fnDrawCallback: function() {
                 Status();
                 Live();
                 Lock();
-            },
+                initializeSortable();
 
+                // Log initial order of IDs when table loads/redraws
+                var initialIds = table.rows({
+                    search: 'applied'
+                }).ids().toArray();
+                console.log("Initial topic IDs order:", initialIds);
+            },
             columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex',
@@ -206,11 +191,127 @@
                     searchable: true
                 },
             ]
-
-
         });
 
+        // Store all IDs when table first loads
+        var allTopicIds = [];
+
+        // Function to fetch all IDs from server
+        function fetchAllTopicIds() {
+            $.ajax({
+                url: "{{ route('admin.topic-materials.topicMaterialListData') }}",
+                data: {
+                    length: -1 // Get all records
+                },
+                success: function(response) {
+                    allTopicIds = response.data.map(item => item.id);
+                    console.log("All topic IDs loaded:", allTopicIds);
+                }
+            });
+        }
+
+        // Initial fetch
+        fetchAllTopicIds();
+
+        function initializeSortable() {
+            $(".row_position").sortable({
+                delay: 150,
+                start: function(event, ui) {
+                    // Check if search input has value
+                    // var searchValue = table.search();
+                    // if (searchValue.length > 0) {
+                    //     $(".row_position").sortable("cancel");
+                    //     swal("Warning!", "Sorting is disabled while searching", "warning");
+                    //     return false;
+                    // }
+                },
+                stop: function() {
+                    // Get current page info
+                    var pageInfo = table.page.info();
+
+                    // Get new order of visible rows
+                    var visibleOrder = $(".row_position>tr").map(function() {
+                        return this.id;
+                    }).get();
+
+                    // Update our stored IDs with the new visible order
+                    for (var i = 0; i < visibleOrder.length; i++) {
+                        if (pageInfo.start + i < allTopicIds.length) {
+                            allTopicIds[pageInfo.start + i] = visibleOrder[i];
+                        }
+                    }
+
+                    console.log("Updated order of all topics:", allTopicIds);
+                    updateTopicOrder(allTopicIds);
+                }
+            });
+        }
+
+        //     function initializeSortable() {
+        //     $(".row_position").sortable({
+        //         delay: 150,
+        //         stop: function() {
+        //             // Get all IDs from the DataTables data
+        //             var allData = table.rows({ search: 'applied' }).data().toArray();
+        //             var allTopicIds = allData.map(item => item.id);
+
+        //             // Get visible row IDs
+        //             var visibleOrder = [];
+        //             $(".row_position>tr").each(function() {
+        //                 var id = $(this).attr('id');
+        //                 if (id) visibleOrder.push(id);
+        //             });
+
+        //             // Get current page info
+        //             var pageInfo = table.page.info();
+
+        //             // Update positions
+        //             for (var i = 0; i < visibleOrder.length; i++) {
+        //                 if (pageInfo.start + i < allTopicIds.length) {
+        //                     allTopicIds[pageInfo.start + i] = visibleOrder[i];
+        //                 }
+        //             }
+
+        //             // Filter valid IDs
+        //             var validIds = allTopicIds.filter(id => id);
+
+        //             console.log("Final IDs to update:", validIds);
+        //             updateTopicOrder(validIds);
+        //         }
+        //     });
+        // }
+
+
+        function updateTopicOrder(aData) {
+
+            console.log("updateTopicOrder:", aData);
+            $.ajax({
+                url: "{{ route('admin.topic-materials.changeorder') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                type: 'POST',
+                data: {
+                    allData: aData
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                success: function() {
+                    $('#preloader').css('display', 'none');
+                    swal("Success!", "Topic order updated successfully", "success");
+                    // table.draw(false);
+                },
+                error: function(xhr) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('error', xhr.responseJSON?.message || 'Error updating order');
+                }
+            });
+        }
     });
+
+
+
 
     function Status() {
 

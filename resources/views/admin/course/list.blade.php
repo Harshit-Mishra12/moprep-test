@@ -183,65 +183,83 @@
 </script>
 
 <script type="text/javascript">
-    $(".row_position").sortable({
-        delay: 150,
-        stop: function() {
-            var selectedData = new Array();
-            $(".row_position>tr").each(function() {
-                selectedData.push($(this).attr("id"));
-            });
-            updateOrder(selectedData);
+    $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('#DataTables_Table_0')) {
+            $('#DataTables_Table_0').DataTable().destroy();
         }
-    });
 
-    function updateOrder(aData) {
-        $.ajax({
-            url: "{{ route('admin.course.change-order') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            type: 'POST',
-            data: {
-                allData: aData
-            },
-            success: function() {
-                swal("Success!", "Your change successfully saved", "success");
+        var table = $('#DataTables_Table_0').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, 500],
+                [10, 25, 50, 100, 500]
+            ], // Added 500 option
+            pageLength: 10, // Default to 10 entries
+            scrollY: '70vh', // Set a fixed height for scrollable area
+            scrollCollapse: true,
+            dom: '<"top"lf>rt<"bottom"ip>', // Layout control
+            stateSave: true // Remember user settings
+        });
+        $(".row_position").sortable({
+            delay: 150,
+            stop: function() {
+                var selectedData = new Array();
+                $(".row_position>tr").each(function() {
+                    selectedData.push($(this).attr("id"));
+                });
+                updateOrder(selectedData);
             }
         });
-    }
 
-    $('.-live').change(function() {
-
-        var is_live = $(this).prop('checked') == true ? '1' : '0';
-        var id = $(this).data('id');
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "{{ route('admin.course.changelive') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                'is_live': is_live,
-                'id': id
-            },
-            beforeSend: function() {
-                $('#preloader').css('display', 'block');
-            },
-            error: function(xhr, textStatus) {
-
-                if (xhr && xhr.responseJSON.message) {
-                    sweetAlertMsg('error', xhr.is_live + ': ' + xhr.responseJSON.message);
-                } else {
-                    sweetAlertMsg('error', xhr.is_live + ': ' + xhr.statusText);
+        function updateOrder(aData) {
+            $.ajax({
+                url: "{{ route('admin.course.change-order') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                type: 'POST',
+                data: {
+                    allData: aData
+                },
+                success: function() {
+                    swal("Success!", "Your change successfully saved", "success");
                 }
-                $('#preloader').css('display', 'none');
-            },
-            success: function(data) {
-                $('#preloader').css('display', 'none');
-                sweetAlertMsg('success', data.message);
-            }
+            });
+        }
+
+        $('.-live').change(function() {
+
+            var is_live = $(this).prop('checked') == true ? '1' : '0';
+            var id = $(this).data('id');
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "{{ route('admin.course.changelive') }}",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'is_live': is_live,
+                    'id': id
+                },
+                beforeSend: function() {
+                    $('#preloader').css('display', 'block');
+                },
+                error: function(xhr, textStatus) {
+
+                    if (xhr && xhr.responseJSON.message) {
+                        sweetAlertMsg('error', xhr.is_live + ': ' + xhr.responseJSON.message);
+                    } else {
+                        sweetAlertMsg('error', xhr.is_live + ': ' + xhr.statusText);
+                    }
+                    $('#preloader').css('display', 'none');
+                },
+                success: function(data) {
+                    $('#preloader').css('display', 'none');
+                    sweetAlertMsg('success', data.message);
+                }
+            });
         });
+
     });
 </script>
 

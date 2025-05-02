@@ -87,7 +87,23 @@ class TopicMaterialsController extends Controller
 
 	public function topicMaterialList()
 	{
-		$result = \App\Models\TopicMaterials::orderBy('id', 'DESC')->get();
+		//	$result = \App\Models\TopicMaterials::orderByRaw('CAST(sort_order AS UNSIGNED) ASC')->get();
+		$result = \App\Models\TopicMaterials::select([
+			'id',
+			'course_id',
+			'batch_id',
+			'topic',
+			'sort_order',
+			'status',
+			'course_master_id',
+			'is_live',
+			'is_lock',
+			'created_at',
+			'updated_at'
+		])
+			->orderByRaw('CAST(sort_order AS UNSIGNED) ASC')
+			->get();
+		//  		dd($result);
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['15']) ? $permission['15'] : null;
 
@@ -100,8 +116,15 @@ class TopicMaterialsController extends Controller
 		$permission = session('permission') ?? [];
 		$permission = isset($permission['15']) ? $permission['15'] : null;
 
+
+
 		if ($request->ajax()) {
-			$result = TopicMaterials::orderBy('id', 'DESC')->get();
+			//	$result = TopicMaterials::orderBy('id', 'DESC')->get();
+
+			$result = TopicMaterials::orderByRaw('CAST(sort_order AS UNSIGNED) ASC')
+				->orderBy('id', 'ASC') // Secondary sort
+				->get();
+
 			return Datatables::of($result)
 
 				->addIndexColumn()
@@ -177,6 +200,41 @@ class TopicMaterialsController extends Controller
 		} else {
 
 			return view('admin.topic_materials.list');
+		}
+	}
+
+
+	public function changeOrder(Request $request)
+	{
+		$allData = $request->allData;
+
+
+
+		try {
+			$request->validate(['allData' => 'required|array']);
+
+			// Update sort orders for each topic
+			foreach ($request->allData as $order => $id) {
+				DB::table('topic_materials')
+					->where('id', $id)
+					->update(['sort_order' => $order + 1]);
+			}
+
+			// Get updated topics data with their new sort orders
+			$result = DB::table('topic_materials')
+				->whereIn('id', $allData)
+				->select('id', 'sort_order')
+				->orderBy('sort_order')
+				->get();
+
+			return response()->json([
+				'success' => true,
+				'data' => $result
+			]);
+		} catch (\Exception $e) {
+			return response()->json([
+				'error' => $e->getMessage()
+			], 500);
 		}
 	}
 

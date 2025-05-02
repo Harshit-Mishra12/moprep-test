@@ -72,6 +72,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin', 'middleware' => ['auth', 'ch
 		Route::match(['get', 'post'], 'map', 'Admin\CourseController@map')->name('course.map');
 		Route::get('list', 'Admin\CourseController@subjectList');
 		Route::get('map-list', 'Admin\CourseController@mapList');
+		Route::get('map-delete/{id}', 'Admin\CourseController@deleteMapping');
 		Route::post('change-status', 'Admin\CourseController@changeStatus')->name('course.changestatus');
 		Route::get('update/{id}', 'Admin\CourseController@updateSubject');
 		Route::get('view/{id}', 'Admin\CourseController@viewSubject');
@@ -124,8 +125,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin', 'middleware' => ['auth', 'ch
 	// TopicMaterials
 	Route::group(['prefix' => 'topic-materials'], function () {
 		Route::match(['get', 'post'], 'add', 'Admin\TopicMaterialsController@add')->name('topic-materials.add');
-		Route::get('list', 'Admin\TopicMaterialsController@topicMaterialList');
+		Route::get('list', 'Admin\TopicMaterialsController@topicMaterialList')->name('topic-materials.topicMaterialList');;
 		Route::get('listData', 'Admin\TopicMaterialsController@topicMaterialListData')->name('topic-materials.topicMaterialListData');
+		Route::post('change-order', 'Admin\TopicMaterialsController@changeOrder')->name('topic-materials.changeorder');
 		Route::post('change-status', 'Admin\TopicMaterialsController@changeStatus')->name('topic-materials.changestatus');
 		Route::get('update/{id}', 'Admin\TopicMaterialsController@updateTopicMateria');
 		Route::get('delete/{id}', 'Admin\TopicMaterialsController@deleteTopicMateria');
